@@ -1,26 +1,3 @@
-파이썬 설치하는 방법
-    - python.org/micrsoft store : 파이썬 표준모듈200여개가 포함된 파이썬 인터프리터를 install(sys, re, datetime, time...)
-    - miniconda : python.org버전 보다 조금 많은 모듈이 포함된 인터프리터를 install
-    - anaconda : 몇백개 이상의 패키지, 개발도구(IDE tools;jupyter notebook)를 포함한 인터프리터를 설치(200명이상의 기업체에서는 유료)
-    - uv(pip-파이썬 패키지 설치도구, 패키지/프로젝트 관리도구)를 이용한 설치
- * 참조 : https://docs.astral.sh/uv/getting-started/installation/
-        * uv설치 후 파이썬 설치(반드시 powershell관리자권한으로 실행)
-        
-        * Set-ExecutionPolicy RemoteSigned -Scope CurrentUser 
-        * Get-ExecutionPolicy명령으로 RemoteSigned출력확인
-        * powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex" 
-        * powershell 닫았다 다시 열기
-        * uv python list
-        * uv python install 3.11(업계에서는 3.13이상은 잘 안 씀)
-
-- 함수나 클래스나 변수 등을 파이썬 파일(*.py)에 저장해서 모듈을 만들고, 재사용할 수 있음
-- 모듈을 가져오는 순서 (1)표준모듈 (2) sys.path변수에 저장된 경로 
-
-
-- 상위패키지를 import한다고 하위패키지가 import되지 않습니다
-- 패키지를 import한다고 모듈이 import 되지 않습니다
-모듈/패키지 이나 모듈안의 함수를 가져오는 방법
-
 
 import A              - A모듈을 가져옴
 import A as B         - A모듈을 B이름으로 가져옴
@@ -31,6 +8,9 @@ from A import B       - A패키지안의 B모듈을 가져옴
 from A.B import C     - A패키지안의 B모듈안의 C함수 가져옴
 from A import b as c  - A패키지안의 B모듈을 C이름으로 가져옴
 from A.B import C as D- A패키지안의 B모듈안의 C를 D이름으로 가져옴
+
+
+
 
 
 아나콘다 프롬프트에서 
