@@ -1,0 +1,90 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style>
+        #container {
+            width: 1000px;
+            margin: 0 auto;
+            overflow: hidden;
+            text-align: center;
+            border: 1px solid gray;
+        }
+        #header, #nav, #section, #footer {
+            margin: 10px;
+            border: 1px solid gray;
+            padding: 10px;
+            text-align: justify;
+            overflow: hidden;
+            text-align: center;
+        }
+        #header, #footer {
+            height: 100px;
+            background-color: yellow;
+            line-height: 100px;
+            font-size: 22px;
+        }
+        #nav ul {
+            background-color: pink;
+            overflow: hidden;
+            margin: 0 auto;
+            padding: 0;
+            text-align: center;
+            height: 50px;
+            line-height: 50px;
+            font-size: 22px;
+        }
+        #nav ul li{
+            list-style:none;
+            float:left;
+            width:20%;
+        }
+        #nav ul li>a{
+            text-decoration-line:none;
+            color:purple;
+            font-size:20px;
+            font-weight:bold;
+        }
+        #nav li:first-child{border-radius:30px 0 0 30px;}
+        #nav li:last-child{border-radius:0 30px 30px 0;}
+        #section{
+             height:400px;
+        }
+        #section #content {
+            border: 1px solid gray;
+            float: left;
+            height:400px;
+            width:67%;
+            font-size: 22px;
+        }
+        #section #banner {
+            border: 1px solid gray;
+            float: right;
+            height:400px;
+            width:31%;
+            font-size: 22px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="header">HEADER</div>
+        <div id="nav">
+            <p>NAVIGATION</p>
+            <ul>
+                <li><a href="#1">menu1</a></li>
+                <li><a href="#2">menu2</a></li>
+                <li><a href="#3">menu3</a></li>
+                <li><a href="#4">menu4</a></li>
+                <li><a href="#5">menu5</a></li>
+            </ul>
+        </div>
+        <div id="section">
+            <div id="content">CONTENT</div>
+            <div id="banner">BANNER</div>
+        </div>
+        <div id="footer">FOOTER</div>
+    </div>
+</body>
+</html>
