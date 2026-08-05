@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0" />
+    <title></title>
+    <style>
+        p { text-align: center; }
+    </style>
+    <script>
+        function chk() {
+            let su1 = Number(document.frm.su1.value);
+            let su2 = Number(document.frm.su2.value);
+            if (su1 > su2) {
+                let diff = su1 - su2;
+                alert(`첫 번째 수가 두 번째 수보다 ${diff} 만큼 더 큽니다.`);
+            } else if (su2 > su1) {
+                let diff = su2 - su1;
+                alert(`두 번째 수가 첫 번째 수보다 ${diff} 만큼 더 큽니다.`);
+            } else {
+                alert("두 수가 같습니다.");
+            }
+            return false;
+        }
+        
+    </script>
+</head>
+<body>
+    <form name="frm" onsubmit="return chk()">
+        <fieldset>
+            <p>첫번째 수 : <input type="number" name="su1"></p>
+            <p>두번째 수 : <input type="number" name="su2"></p>
+            <p><input type="submit" value="결과"></p>
+        </fieldset>
+    </form>
+</body>
+</html>

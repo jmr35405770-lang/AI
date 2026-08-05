@@ -1,0 +1,14 @@
+var cnt =0;
+var startTime = new Date().getTime();
+// console.log(startTime);
+while(new Date().getTime()<=startTime+1000){
+    cnt++; //1증가
+    // cnt--; 1감소
+}
+console.log('1초동안 while문 수행 횟수 : ' + cnt);
+var cnt =0;
+var startTime = new Date().getTime();
+do{
+cnt++
+}while(new Date().getTime() <= startTime+1000);
+console.log('1초동안 do-while문 수행 횟수 : ' + cnt);
