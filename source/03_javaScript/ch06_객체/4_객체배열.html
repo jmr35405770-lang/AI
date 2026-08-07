@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0" />
+    <title></title>
+    <script>
+        let students =[{'name':'김','kor':99,'mat':98, 'eng':90},
+                        {'name':'이','kor':91,'mat':91, 'eng':80},
+                        {'name':'박','kor':92,'mat':92, 'eng':70},
+                        {'name':'정','kor':93,'mat':93, 'eng':60},
+                        {'name':'윤','kor':94,'mat':94, 'eng':50},];
+        for (let idx in students){
+            students[idx].getSum = function(){
+                return this.kor + this.mat + this.eng;
+            };
+            students[idx].getAvg = function(){
+                return Math.round(this.getSum() / 3 * 10)/10;
+            };
+            students[idx].toString = function(){
+                let output = '';
+                for(let key in this){
+                    if(key!='getSum' && key!='getAvg' && key!='toString'){
+                        output += key + ':' + this[key] + ' &nbsp; ';
+                    }else if(key=='getSum' || key=='getAvg'){
+                        output += key.substring(3).toUpperCase() + ':' + this[key]() + ' &nbsp; ';
+                    } //if
+                }  //for
+                return output;
+            };
+        }  //for
+        document.write('<h4>1. 일반 for문</h4>');
+        for(let idx=0 ; idx<students.length ; idx++){
+            document.write(`${idx}번째 ${students[idx]} <br>`);
+        }
+        document.write('<h4>2. for - in 문</h4>');
+        for(let idx=0 ; idx<students.length ; idx++){
+            document.write(`${idx}번째 ${students[idx]} <br>`);
+        }
+        document.write('<h4>3. for - of 문</h4>');
+        for(let student of students){
+            document.write(`${student} <br>`);
+        }
+        document.write('<h4>4. forEach 함수</h4>');
+        students.forEach((element, idx) => {
+            document.write(`${idx}번째 ${element}<br>`);
+        });
+        document.write('<h4>5. forEach 함수</h4>');
+        students.forEach(element => document.write(`${element}<br>`));
+    </script>
+</head>
+<body>
+    
+</body>
+</html>

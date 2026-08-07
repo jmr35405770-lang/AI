@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0" />
+    <title></title>
+    <script>
+        var arr = [1, '홍길동'];
+        arr.push('새로우값');
+        arr.pop();
+        for(let idx in arr){
+            document.write(`${idx}번째(index타입:${typeof(key)}) - ${arr[idx]}<br>`);
+        }
+        
+        obj.address = '신림동';
+        obj.hobby = '공부하기';
+        document.write('<h3>객체에 속성 추가 후</h3>');
+        for(let key in obj){
+            document.write(`${key} : ${obj[key]}<br>`);
+        }
+        delete(obj.age);
+        document.write('<h3>객체에 속성 제거 후</h3>');
+        for(let key in obj){
+            document.write(`${key} : ${obj[key]}<br>`);
+        }
+</script>
+</head>
+<body>
+    
+</body>
+</html>
