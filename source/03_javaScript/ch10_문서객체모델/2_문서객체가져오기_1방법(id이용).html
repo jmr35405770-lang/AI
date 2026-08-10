@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0" />
+    <title></title>
+    <style>
+        
+    </style>
+    <script>
+        var clock, btn; // 문서객체
+        var timerId; // 타이머 id
+        var timerToggle = 1; // 타이머 가동중
+        window.onload = () => {
+            // #clock에 1초마다 시간 출력(타이머 가동중)
+            clock = document.getElementById('clock');
+            btn   = document.getElementById('btn');
+            clock.innerHTML = new Date().toLocaleString();
+            timerId = setInterval(() => {
+                clock.innerHTML = new Date().toLocaleString();
+            }, 1000);
+        }
+        const ToggleFunction =() => {
+            // 타이머가 가동중이면 멈추고, 타이머가 멈춰있으면 가동시키기
+            if(timerToggle){
+                timerToggle = 0; //타이머 멈춤
+                btn.innerHTML = '타이머 멈춤'
+                clearInterval(timerId);
+                // clock.style = 'background-color:yellow';
+                clock.style.backgroundColor = 'yellow';
+                clock.style.color = 'red';
+            }else{
+                timerToggle = 1; //타이머 재가동
+                btn.innerHTML = '타이머 가동중';
+                clock.style.backgroundColor = 'white';
+                clock.style.color = 'black';
+                timerId = setInterval(() => {
+                    clock.innerHTML = new Date().toLocaleString();
+                }, 1000);
+            }
+        };
+    </script>
+</head>
+<body>
+    <h1>날짜와 시간</h1>
+    <h1 id="clock">날짜와 시간을 출력할 공간</h1>
+    <button id="btn" onclick="ToggleFunction()">타이머 가동중</button>
+</body>
+</html>
