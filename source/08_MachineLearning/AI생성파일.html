@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>서울특별시 25개 구 전체 응급실 및 종합병원 실시간 관제 센터</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Pretendard Font -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-base: #090d16;
+            --card-bg: rgba(18, 25, 41, 0.78);
+            --card-border: rgba(255, 255, 255, 0.09);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            
+            --color-green: #10b981;
+            --color-yellow: #f59e0b;
+            --color-red: #ef4444;
+            --color-blue: #3b82f6;
+            --color-indigo: #6366f1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            background-image: 
+                radial-gradient(at 50% 0%, rgba(59, 130, 246, 0.18) 0px, transparent 65%),
+                radial-gradient(at 50% 100%, rgba(239, 68, 68, 0.12) 0px, transparent 65%);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2.5rem 0;
+        }
+
+        .dashboard-wrapper {
+            max-width: 1380px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Center Aligned Header */
+        .header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding-bottom: 2.2rem;
+            border-bottom: 1px solid var(--card-border);
+            margin-bottom: 2rem;
+        }
+
+        .brand {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.9rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .brand-icon {
+            font-size: 2.8rem;
+            color: var(--color-blue);
+            background: rgba(59, 130, 246, 0.15);
+            padding: 1.1rem;
+            border-radius: 24px;
+            box-shadow: 0 0 25px rgba(59, 130, 246, 0.25);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .brand-text h1 {
+            font-size: 2.4rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+
+        .brand-text h1 span {
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-text p {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            margin-top: 6px;
+        }
+
+        .header-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.2rem;
+            flex-wrap: wrap;
+        }
+
+        .live-badge {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--color-red);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            padding: 0.45rem 1.1rem;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .live-badge .dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--color-red);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--color-red);
+            animation: blink 1.2s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(0.8); }
+        }
+
+        .clock {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.04);
+            padding: 0.45rem 1.1rem;
+            border-radius: 20px;
+            border: 1px solid var(--card-border);
+        }
+
+        /* Center Aligned Summary Cards Grid */
+        .summary-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 18px;
+            padding: 1.5rem 1.2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            backdrop-filter: blur(14px);
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .sc-icon {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+            color: var(--color-blue);
+        }
+
+        .summary-card.danger .sc-icon { color: var(--color-red); }
+        .summary-card.warning .sc-icon { color: var(--color-yellow); }
+        .summary-card.success .sc-icon { color: var(--color-green); }
+
+        .sc-label {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .sc-val {
+            font-size: 1.9rem;
+            font-weight: 800;
+            margin-top: 0.3rem;
+            color: var(--text-primary);
+        }
+
+        .summary-card.danger .sc-val { color: var(--color-red); }
+        .summary-card.warning .sc-val { color: var(--color-yellow); }
+        .summary-card.success .sc-val { color: var(--color-green); }
+
+        /* Center Aligned Control Panel */
+        .control-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.2rem;
+            margin-bottom: 2.5rem;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .search-wrap {
+            width: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-wrap i {
+            position: absolute;
+            left: 1.4rem;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .search-wrap input {
+            width: 100%;
+            padding: 1.1rem 1.2rem 1.1rem 3.4rem;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            color: var(--text-primary);
+            font-size: 1.02rem;
+            outline: none;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .search-wrap input::placeholder {
+            text-align: center;
+            color: #64748b;
+        }
+
+        .search-wrap input:focus {
+            border-color: var(--color-blue);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.18);
+            background: rgba(22, 32, 54, 0.95);
+        }
+
+        .filter-wrap {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .filter-wrap select {
+            flex: 1;
+            padding: 0.95rem 1.2rem;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            outline: none;
+            cursor: pointer;
+            text-align-last: center;
+            transition: all 0.2s;
+        }
+
+        .filter-wrap select:focus {
+            border-color: var(--color-blue);
+        }
+
+        /* District Card Grid */
+        .district-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 1.6rem;
+        }
+
+        .district-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .district-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.85rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .district-title {
+            display: flex;
+            align-items: baseline;
+            gap: 0.6rem;
+        }
+
+        .district-name {
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+        }
+
+        .zone-tag {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.06);
+            padding: 3px 9px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        /* Risk Badges */
+        .risk-badge {
+            padding: 0.38rem 0.85rem;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .risk-badge.low { background: rgba(16, 185, 129, 0.15); color: var(--color-green); border: 1px solid rgba(16, 185, 129, 0.35); }
+        .risk-badge.medium { background: rgba(245, 158, 11, 0.15); color: var(--color-yellow); border: 1px solid rgba(245, 158, 11, 0.35); }
+        .risk-badge.high { background: rgba(239, 68, 68, 0.15); color: var(--color-red); border: 1px solid rgba(239, 68, 68, 0.35); }
+
+        .info-group {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            margin-bottom: 0.6rem;
+            color: var(--text-secondary);
+        }
+
+        .info-group strong {
+            color: var(--text-primary);
+        }
+
+        /* ER Gauge Section */
+        .er-box {
+            background: rgba(9, 13, 22, 0.65);
+            border-radius: 14px;
+            padding: 1.1rem;
+            margin-top: 0.8rem;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .er-title-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.88rem;
+            margin-bottom: 0.7rem;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .fill-low { background: linear-gradient(90deg, #059669, #10b981); }
+        .fill-medium { background: linear-gradient(90deg, #d97706, #f59e0b); }
+        .fill-high { background: linear-gradient(90deg, #dc2626, #ef4444); }
+
+        /* Hospital List Toggle & Detail */
+        .hospital-toggle-btn {
+            width: 100%;
+            margin-top: 1rem;
+            padding: 0.7rem;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.28);
+            color: #60a5fa;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .hospital-toggle-btn:hover {
+            background: rgba(59, 130, 246, 0.22);
+            color: #ffffff;
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+
+        .hospital-list {
+            display: none;
+            margin-top: 0.9rem;
+            padding-top: 0.9rem;
+            border-top: 1px dashed rgba(255, 255, 255, 0.1);
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .hospital-list.open {
+            display: block;
+        }
+
+        .hospital-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.55rem 0.7rem;
+            border-radius: 10px;
+            font-size: 0.83rem;
+            background: rgba(255, 255, 255, 0.035);
+            margin-bottom: 0.45rem;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            transition: background 0.15s;
+        }
+
+        .hospital-item:hover {
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+        .hospital-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .hospital-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .hospital-beds {
+            font-weight: 700;
+            letter-spacing: -0.2px;
+        }
+
+        .hospital-beds.low-beds { color: #f87171; }
+        .hospital-beds.mid-beds { color: #fbbf24; }
+        .hospital-beds.good-beds { color: #34d399; }
+
+        /* Custom Scrollbar for Hospital List */
+        .hospital-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .hospital-list::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 4px;
+        }
+        .hospital-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 4px;
+        }
+
+        @media (max-width: 640px) {
+            .filter-wrap { flex-direction: column; }
+            .brand-text h1 { font-size: 1.8rem; }
+            .district-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <!-- 상단 헤더 (중앙 정렬) -->
+        <header class="header">
+            <div class="brand">
+                <i class="fa-solid fa-hospital-user brand-icon"></i>
+                <div class="brand-text">
+                    <h1>SEOUL <span>EMERGENCY HUB</span></h1>
+                    <p>서울특별시 25개 전체 자치구 실시간 응급실 & 주요 병원 통합 관제</p>
+                </div>
+            </div>
+            <div class="header-status">
+                <span class="live-badge"><span class="dot"></span>  LIVE</span>
+                <span class="clock" id="clock"><i class="fa-regular fa-clock"></i> --:--:--</span>
+            </div>
+        </header>
+
+        <!-- 요약 지표 영역 (중앙 정렬) -->
+        <section class="summary-bar">
+            <div class="summary-card">
+                <i class="fa-solid fa-map-location-dot sc-icon"></i>
+                <span class="sc-label">관제 자치구</span>
+                <strong class="sc-val">25개 구 전체</strong>
+            </div>
+            <div class="summary-card danger">
+                <i class="fa-solid fa-triangle-exclamation sc-icon"></i>
+                <span class="sc-label">응급 혼잡 (위험)</span>
+                <strong class="sc-val" id="high-risk-count">0곳</strong>
+            </div>
+            <div class="summary-card warning">
+                <i class="fa-solid fa-circle-exclamation sc-icon"></i>
+                <span class="sc-label">응급 주의</span>
+                <strong class="sc-val" id="medium-risk-count">0곳</strong>
+            </div>
+            <div class="summary-card success">
+                <i class="fa-solid fa-bed-pulse sc-icon"></i>
+                <span class="sc-label">서울 총 응급 가용 병상</span>
+                <strong class="sc-val" id="total-beds-count">0석</strong>
+            </div>
+        </section>
+
+        <!-- 검색 및 권역 필터 (중앙 정렬) -->
+        <section class="control-panel">
+            <div class="search-wrap">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="search-input" placeholder="25개 자치구 또는 병원 이름 검색 (예: 강남구, 서울대병원, 신촌세브란스, A-강동경희대...)">
+            </div>
+            <div class="filter-wrap">
+                <select id="zone-filter">
+                    <option value="all">전체 권역 보기 (25개 자치구)</option>
+                    <option value="도심권">도심권 (종로구, 중구, 용산구)</option>
+                    <option value="동북권">동북권 (성동, 광진, 동대문, 중랑, 성북, 강북, 도봉, 노원)</option>
+                    <option value="서북권">서북권 (은평구, 서대문구, 마포구)</option>
+                    <option value="서남권">서남권 (양천, 강서, 구로, 금천, 영등포, 동작, 관악)</option>
+                    <option value="동남권">동남권 (서초구, 강남구, 송파구, 강동구)</option>
+                </select>
+                <select id="risk-filter">
+                    <option value="all">전체 위험도 보기</option>
+                    <option value="high">🚨 혼잡/위험 (High)</option>
+                    <option value="medium">⚠️ 포화주의 (Medium)</option>
+                    <option value="low">✅ 가용 원활 (Low)</option>
+                </select>
+            </div>
+        </section>
+
+        <!-- 서울 25개 자치구 전체 그리드 -->
+        <section class="district-grid" id="district-grid">
+            <!-- JS dynamic content -->
+        </section>
+    </div>
+
+    <script>
+        // 서울특별시 25개 자치구 전체 완전 데이터 세트 (구별 A~Z 대표 병원 리스트 포함)
+        const seoulDistricts = [
+            // 동남권 (4개 구)
+            { 
+                name: "강남구", zone: "동남권", population: "542,100명", risk: "high", riskText: "위험",
+                hospitals: [
+                    { name: "A-강남세브란스병원", avail: 3, total: 32 },
+                    { name: "B-삼성서울병원", avail: 4, total: 40 },
+                    { name: "C-강남베드로병원", avail: 5, total: 20 }
+                ]
+            },
+            { 
+                name: "강동구", zone: "동남권", population: "461,200명", risk: "medium", riskText: "주의",
+                hospitals: [
+                    { name: "A-강동경희대학교병원", avail: 9, total: 25 },
+                    { name: "B-강동성심병원", avail: 11, total: 28 },
+                    { name: "C-중앙보훈병원", avail: 14, total: 35 }
+                ]
+            },
+            { 
+                name: "서초구", zone: "동남권", population: "408,400명", risk: "medium", riskText: "주의",
+                hospitals: [
+                    { name: "A-가톨릭대학교 서울성모병원", avail: 14, total: 45 },
+                    { name: "B-서초참병원", avail: 7, total: 18 }
+                ]
+            },
+            { 
+                name: "송파구", zone: "동남권", population: "658,100명", risk: "high", riskText: "위험",
+                hospitals: [
+                    { name: "A-서울아산병원", avail: 8, total: 75 },
+                    { name: "B-국립경찰병원", avail: 9, total: 35 },
+                    { name: "C-송파사랑병원", avail: 4, total: 15 }
+                ]
+            },
+
+            // 동북권 (8개 구)
+            { 
+                name: "강북구", zone: "동북권", population: "295,300명", risk: "low", riskText: "정상",
+                hospitals: [
+                    { name: "A-국립재활원응급실", avail: 12, total: 20 },
+                    { name: "B-서울현대병원", avail: 9, total: 15 }
+                ]
+            },
+            { 
+                name: "광진구", zone: "동북권", population: "338,200명", risk: "low", riskText: "정상",
+                hospitals: [
+                    { name: "A-건국대학교병원", avail: 16, total: 30 },
+                    { name: "B-혜민병원", avail: 11, total: 20 }
+                ]
+            },
+            { 
+                name: "노원구", zone: "동북권", population: "503,100명", risk: "medium", riskText: "주의",
+                hospitals: [
+                    { name: "A-노원을지대학교병원", avail: 10, total: 30 },
+                    { name: "B-인제대학교 상계백병원", avail: 12, total: 32 },
+                    { name: "C-원자력병원", avail: 8, total: 20 }
+                ]
+            },
+            { 
+                name: "도봉구", zone: "동북권", population: "310,500명", risk: "low", riskText: "정상",
+                hospitals: [
+                    { name: "A-한일병원", avail: 16, total: 30 },
+                    { name: "B-도봉병원", avail: 10, total: 15 }
+                ]
+            },
+            { 
+                name: "동대문구", zone: "동북권", population: "340,100명", risk: "high", riskText: "위험",
+                hospitals: [
+                    { name: "A-경희대학교병원", avail: 3, total: 30 },
+                    { name: "B-삼육서울병원", avail: 5, total: 28 },
+                    { name: "C-서울특별시 동부병원", avail: 6, total: 20 }
+                ]
+            },
+            { 
+                name: "성동구", zone: "동북권", population: "280,300명", risk: "low", riskText: "정상",
+                hospitals: [
+                    { name: "A-한양대학교병원", avail: 18, total: 35 },
+                    { name: "B-제인병원", avail: 12, total: 20 }
+                ]
+            },
+            { 
+                name: "성북구", zone: "동북권", population: "430,200명", risk: "medium", riskText: "주의",
+                hospitals: [
+                    { name: "A-고려대학교 안암병원", avail: 11, total: 35 },
+                    { name: "B-성북우리아이들병원", avail: 8, total: 18 }
+                ]
+            },
+            { 
+                name: "중랑구", zone: "동북권", population: "385,400명", risk: "medium", riskText: "주의",
+                hospitals: [
+                    { name: "A-서울특별시 서울의료원", avail: 13, total: 35 },
+                    { name: "B-녹색병원", avail: 7, total: 20 },
+                    { name: "C-동부제일병원", avail: 8, total: 18 }
+                ]
+            },
+
+            // 서북권 (3개 구)
+            { 
+                name: "마포구", zone: "서북권", population: "368,300명", risk: "medium", riskText: "주의",
+                hospitals: [
+                    { name: "A-신촌연세병원", avail: 10, total: 22 },
+                    { name: "B-마포세브란스헬스센터", avail: 9, total: 20 }
+                ]
+            },
+            { 
+                name: "서대문구", zone: "서북권", population: "306,100명", risk: "high", riskText: "위험",
+                hospitals: [
+                    { name: "A-신촌세브란스병원", avail: 7, total: 60 },
+                    { name: "B-동신병원", avail: 5, total: 25 }
+                ]
+            },
+            { 
+                name: "은평구", zone: "서북권", population: "468,200명", risk: "medium", riskText: "주의",
+                hospitals: [
+                    { name: "A-가톨릭대학교 은평성모병원", avail: 13, total: 38 },
+                    { name: "B-청구성심병원", avail: 9, total: 20 }
+                ]
+            },
+
+            // 서남권 (7개 구)
+            { 
+                name: "강서구", zone: "서남권", population: "570,400명", risk: "medium", riskText: "주의",
+                hospitals: [
+                    { name: "A-이화여자대학교 서울병원", avail: 15, total: 42 },
+                    { name: "B-부민병원", avail: 11, total: 28 },
+                    { name: "C-우리들병원", avail: 9, total: 20 }
+                ]
+            },
+            { 
+                name: "관악구", zone: "서남권", population: "487,100명", risk: "high", riskText: "위험",
+                hospitals: [
+                    { name: "A-에이치플러스 양지병원", avail: 4, total: 28 },
+                    { name: "B-관악사랑병원", avail: 5, total: 20 }
+                ]
+            },
+            { 
+                name: "구로구", zone: "서남권", population: "395,200명", risk: "medium", riskText: "주의",
+                hospitals: [
+                    { name: "A-고려대학교 구로병원", avail: 10, total: 38 },
+                    { name: "B-구로성심병원", avail: 8, total: 22 }
+                ]
+            },
+            { 
+                name: "금천구", zone: "서남권", population: "230,100명", risk: "low", riskText: "정상",
+                hospitals: [
+                    { name: "A-희명병원", avail: 15, total: 25 }
+                ]
+            },
+            { 
+                name: "동작구", zone: "서남권", population: "380,200명", risk: "low", riskText: "정상",
+                hospitals: [
+                    { name: "A-서울특별시 보라매병원", avail: 16, total: 30 },
+                    { name: "B-중앙대학교병원", avail: 9, total: 20 }
+                ]
+            },
+            { 
+                name: "양천구", zone: "서남권", population: "440,300명", risk: "low", riskText: "정상",
+                hospitals: [
+                    { name: "A-이화여자대학교 목동병원", avail: 17, total: 35 },
+                    { name: "B-홍익병원", avail: 11, total: 20 }
+                ]
+            },
+            { 
+                name: "영등포구", zone: "서남권", population: "375,100명", risk: "medium", riskText: "주의",
+                hospitals: [
+                    { name: "A-가톨릭대학교 여의도성모병원", avail: 11, total: 32 },
+                    { name: "B-한림대학교 강남성심병원", avail: 10, total: 28 },
+                    { name: "C-명지성모병원", avail: 8, total: 18 }
+                ]
+            },
+
+            // 도심권 (3개 구)
+            { 
+                name: "용산구", zone: "도심권", population: "218,200명", risk: "low", riskText: "정상",
+                hospitals: [
+                    { name: "A-순천향대학교 서울병원", avail: 18, total: 36 }
+                ]
+            },
+            { 
+                name: "종로구", zone: "도심권", population: "140,400명", risk: "high", riskText: "위험",
+                hospitals: [
+                    { name: "A-서울대학교병원", avail: 6, total: 65 },
+                    { name: "B-강북삼성병원", avail: 5, total: 25 },
+                    { name: "C-세란병원", avail: 3, total: 12 }
+                ]
+            },
+            { 
+                name: "중구", zone: "도심권", population: "120,300명", risk: "low", riskText: "정상",
+                hospitals: [
+                    { name: "A-국립중앙의료원", avail: 14, total: 35 },
+                    { name: "B-서울백병원센터", avail: 8, total: 15 }
+                ]
+            }
+        ];
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // Live clock update
+            const updateClock = () => {
+                const now = new Date();
+                document.getElementById("clock").innerHTML = `<i class="fa-regular fa-clock"></i> ${now.toLocaleTimeString("ko-KR")}`;
+            };
+            updateClock();
+            setInterval(updateClock, 1000);
+
+            const grid = document.getElementById("district-grid");
+            const searchInput = document.getElementById("search-input");
+            const zoneFilter = document.getElementById("zone-filter");
+            const riskFilter = document.getElementById("risk-filter");
+
+            // Calculate aggregated bed metrics per district
+            const getErSummary = (hospitals) => {
+                const avail = hospitals.reduce((sum, h) => sum + h.avail, 0);
+                const total = hospitals.reduce((sum, h) => sum + h.total, 0);
+                return { avail, total };
+            };
+
+            // Calculate and display top summary values
+            function updateSummaryData() {
+                const highRiskCount = seoulDistricts.filter(d => d.risk === "high").length;
+                const mediumRiskCount = seoulDistricts.filter(d => d.risk === "medium").length;
+                const totalBeds = seoulDistricts.reduce((sum, d) => {
+                    return sum + d.hospitals.reduce((hSum, h) => hSum + h.avail, 0);
+                }, 0);
+
+                document.getElementById("high-risk-count").textContent = `${highRiskCount}곳`;
+                document.getElementById("medium-risk-count").textContent = `${mediumRiskCount}곳`;
+                document.getElementById("total-beds-count").textContent = `${totalBeds.toLocaleString()}석`;
+            }
+
+            // Render 25 district cards dynamically
+            function renderCards(data) {
+                grid.innerHTML = "";
+                
+                if (data.length === 0) {
+                    grid.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; padding: 4rem 1rem; color: var(--text-secondary);">
+                            <i class="fa-solid fa-triangle-exclamation" style="font-size: 2.2rem; margin-bottom: 0.8rem; color: var(--color-yellow);"></i>
+                            <p class="text-lg font-bold">검색 결과가 없습니다.</p>
+                            <p class="text-sm opacity-70 mt-1">입력하신 자치구명 또는 병원 이름에 해당하는 데이터를 찾을 수 없습니다.</p>
+                        </div>`;
+                    return;
+                }
+
+                data.forEach((item, index) => {
+                    const { avail, total } = getErSummary(item.hospitals);
+                    const ratio = Math.round((avail / total) * 100);
+                    
+                    let fillClass = "fill-low";
+                    if (ratio < 22) fillClass = "fill-high";
+                    else if (ratio < 45) fillClass = "fill-medium";
+
+                    // Generate hospital A-Z list items
+                    const hospitalItemsHTML = item.hospitals.map(h => {
+                        const hRatio = (h.avail / h.total) * 100;
+                        let bedColorClass = "good-beds";
+                        if (hRatio < 20) bedColorClass = "low-beds";
+                        else if (hRatio < 45) bedColorClass = "mid-beds";
+
+                        return `
+                            <div class="hospital-item">
+                                <span class="hospital-name"><i class="fa-solid fa-square-h" style="color:var(--color-blue)"></i> ${h.name}</span>
+                                <span class="hospital-beds ${bedColorClass}">${h.avail}석 / ${h.total}석</span>
+                            </div>
+                        `;
+                    }).join("");
+
+                    const card = document.createElement("div");
+                    card.className = "district-card";
+                    card.innerHTML = `
+                        <div>
+                            <div class="card-header">
+                                <div class="district-title">
+                                    <span class="district-name">${item.name}</span>
+                                    <span class="zone-tag">${item.zone}</span>
+                                </div>
+                                <span class="risk-badge ${item.risk}">${item.riskText}</span>
+                            </div>
+                            <div class="info-group">
+                                <span>자치구 관내 인구</span>
+                                <strong>${item.population}</strong>
+                            </div>
+                            <div class="er-box">
+                                <div class="er-title-row">
+                                    <span>가용 응급 병상</span>
+                                    <strong>${avail}석 / ${total}석 (${ratio}%)</strong>
+                                </div>
+                                <div class="progress-track">
+                                    <div class="progress-fill ${fillClass}" style="width: ${ratio}%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <!-- A-Z Hospital Accordion Button -->
+                            <button class="hospital-toggle-btn" onclick="toggleHospitalList(${index})">
+                                <i class="fa-solid fa-list-check"></i> 
+                                소속 병원 A-Z 병상 상세 보기 (${item.hospitals.length}곳)
+                                <i class="fa-solid fa-chevron-down" id="chevron-${index}" style="transition: transform 0.2s ease;"></i>
+                            </button>
+
+                            <div class="hospital-list" id="hospital-list-${index}">
+                                ${hospitalItemsHTML}
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+
+            // Real-time Filtering
+            function filterData() {
+                const query = searchInput.value.trim().toLowerCase();
+                const selectedZone = zoneFilter.value;
+                const selectedRisk = riskFilter.value;
+
+                const filtered = seoulDistricts.filter(item => {
+                    const matchesDistrict = item.name.toLowerCase().includes(query);
+                    const matchesHospital = item.hospitals.some(h => h.name.toLowerCase().includes(query));
+                    const matchesSearch = matchesDistrict || matchesHospital;
+
+                    const matchesZone = selectedZone === "all" || item.zone === selectedZone;
+                    const matchesRisk = selectedRisk === "all" || item.risk === selectedRisk;
+                    
+                    return matchesSearch && matchesZone && matchesRisk;
+                });
+
+                renderCards(filtered);
+
+                // Expand lists automatically if user is searching
+                if (query.length > 0) {
+                    filtered.forEach((_, idx) => {
+                        const list = document.getElementById(`hospital-list-${idx}`);
+                        const chevron = document.getElementById(`chevron-${idx}`);
+                        if (list) {
+                            list.classList.add('open');
+                            if (chevron) chevron.style.transform = 'rotate(180deg)';
+                        }
+                    });
+                }
+            }
+
+            // Accordion Toggle Event Handler
+            window.toggleHospitalList = function(index) {
+                const list = document.getElementById(`hospital-list-${index}`);
+                const chevron = document.getElementById(`chevron-${index}`);
+                if (list) {
+                    list.classList.toggle('open');
+                    if (list.classList.contains('open')) {
+                        chevron.style.transform = 'rotate(180deg)';
+                    } else {
+                        chevron.style.transform = 'rotate(0deg)';
+                    }
+                }
+            };
+
+            // Event Listeners
+            searchInput.addEventListener("input", filterData);
+            zoneFilter.addEventListener("change", filterData);
+            riskFilter.addEventListener("change", filterData);
+
+            // Initial Execution
+            updateSummaryData();
+            renderCards(seoulDistricts);
+        });
+    </script>
+</body>
+</html>

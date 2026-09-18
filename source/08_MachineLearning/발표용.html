@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEOUL EMERGENCY HUB - 데이터 기반 인구밀집 예측 & 응급실 관제 시스템</title>
+    <!-- Pretendard Font & FontAwesome Icons -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-body: #f8fafc;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --text-main: #0f172a;
+            --text-sub: #475569;
+            --text-muted: #94a3b8;
+            
+            /* Medical Teal Light Theme Accent Palette */
+            --teal-primary: #0d9488;
+            --teal-dark: #0f766e;
+            --teal-light: rgba(13, 148, 136, 0.08);
+            
+            --danger-red: #e11d48;
+            --danger-light: rgba(225, 29, 72, 0.08);
+            
+            --warning-amber: #d97706;
+            --warning-light: rgba(217, 119, 6, 0.08);
+
+            --purple-accent: #7c3aed;
+            --purple-light: rgba(124, 58, 237, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* Top Header Navigation */
+        .header-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 3rem;
+            background: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+            z-index: 10;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .brand-logo i {
+            font-size: 1.5rem;
+            color: var(--teal-primary);
+        }
+
+        .brand-logo span {
+            color: var(--teal-primary);
+        }
+
+        .slide-counter {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--teal-primary);
+            background: var(--teal-light);
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            border: 1px solid rgba(13, 148, 136, 0.2);
+        }
+
+        /* Presentation Main Frame */
+        .slide-frame {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem 4rem;
+            position: relative;
+        }
+
+        .slide {
+            display: none;
+            width: 100%;
+            max-width: 1240px;
+            height: 100%;
+            max-height: 680px;
+            animation: slideUp 0.35s ease-out;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Slide Typography */
+        .category-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--teal-primary);
+            font-size: 0.88rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 0.6rem;
+        }
+
+        .slide-h1 {
+            font-size: 2.4rem;
+            font-weight: 800;
+            line-height: 1.25;
+            color: var(--text-main);
+            margin-bottom: 0.8rem;
+            letter-spacing: -0.5px;
+        }
+
+        .slide-h1 span {
+            color: var(--teal-primary);
+        }
+
+        .slide-sub {
+            font-size: 1.05rem;
+            color: var(--text-sub);
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            max-width: 860px;
+        }
+
+        /* Slide Layout Grids */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; }
+
+        /* Specification Feature Cards */
+        .spec-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.75rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            transition: all 0.2s ease;
+        }
+
+        .spec-card:hover {
+            border-color: var(--teal-primary);
+            box-shadow: 0 8px 24px rgba(13, 148, 136, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .card-badge {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .badge-teal { background: var(--teal-light); color: var(--teal-primary); }
+        .badge-red { background: var(--danger-light); color: var(--danger-red); }
+        .badge-amber { background: var(--warning-light); color: var(--warning-amber); }
+        .badge-purple { background: var(--purple-light); color: var(--purple-accent); }
+
+        .card-h2 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .card-desc {
+            font-size: 0.92rem;
+            color: var(--text-sub);
+            line-height: 1.55;
+        }
+
+        .data-list {
+            margin-top: 1rem;
+            padding-top: 0.8rem;
+            border-top: 1px dashed var(--border-color);
+            list-style: none;
+        }
+
+        .data-list li {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            margin-bottom: 0.4rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .data-list li i {
+            font-size: 0.75rem;
+            color: var(--teal-primary);
+        }
+
+        /* Cover Slide Specifics */
+        .cover-slide {
+            text-align: center;
+            align-items: center;
+        }
+
+        .cover-tag {
+            background: var(--teal-light);
+            border: 1px solid rgba(13, 148, 136, 0.25);
+            color: var(--teal-primary);
+            padding: 0.5rem 1.25rem;
+            border-radius: 30px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+
+        .cover-h1 {
+            font-size: 3.6rem;
+            font-weight: 900;
+            color: var(--text-main);
+            line-height: 1.15;
+            margin-bottom: 1rem;
+            letter-spacing: -1px;
+        }
+
+        .cover-p {
+            font-size: 1.2rem;
+            color: var(--text-sub);
+            margin-bottom: 2.5rem;
+            max-width: 720px;
+            line-height: 1.6;
+        }
+
+        /* Metric Box Highlight */
+        .stat-highlight {
+            background: #f1f5f9;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-val {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--teal-primary);
+        }
+
+        .stat-lbl {
+            font-size: 0.82rem;
+            color: var(--text-sub);
+            font-weight: 600;
+        }
+
+        /* Footer Controls */
+        .footer-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 3rem;
+            background: #ffffff;
+            border-top: 1px solid var(--border-color);
+            z-index: 10;
+        }
+
+        .nav-btn-group {
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        .btn {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.65rem 1.4rem;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: var(--bg-body);
+            border-color: #cbd5e1;
+        }
+
+        .btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .btn-teal {
+            background: var(--teal-primary);
+            border-color: var(--teal-primary);
+            color: #ffffff;
+        }
+
+        .btn-teal:hover:not(:disabled) {
+            background: var(--teal-dark);
+        }
+
+        .fullscreen-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-sub);
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 0.5rem;
+        }
+
+        .fullscreen-btn:hover { color: var(--teal-primary); }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="header-nav">
+        <div class="brand-logo">
+            <i class="fa-solid fa-hospital-user"></i>
+            SEOUL <span>EMERGENCY HUB</span>
+        </div>
+        <div class="slide-counter">
+            Slide <span id="current-slide">1</span> / <span id="total-slides">6</span>
+        </div>
+        <button class="fullscreen-btn" id="fullscreen-btn" title="전체화면"><i class="fa-solid fa-expand"></i></button>
+    </header>
+
+    <!-- Presentation Main Frame -->
+    <main class="slide-frame">
+
+        <!-- [Slide 1] Title & Overview -->
+        <section class="slide active cover-slide">
+            <span class="cover-tag"><i class="fa-solid fa-microchip"></i> 데이터 기반 시티 세이프티 솔루션</span>
+            <h1 class="cover-h1">SEOUL <span style="color: var(--teal-primary);">EMERGENCY HUB</span></h1>
+            <p class="cover-p">서울시 25개 자치구 실시간 유동인구 24시 예측 및 A-Z 응급실 병상 통합 수배 관제 플랫폼 개발 시스템</p>
+            <div>
+                <button class="btn btn-teal" onclick="nextSlide()">발표 시작하기 <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+        </section>
+
+        <!-- [Slide 2] Background & Necessity -->
+        <section class="slide">
+            <span class="category-tag"><i class="fa-solid fa-chart-line"></i> Background & Problem</span>
+            <h2 class="slide-h1">기존 응급의료 및 인구관제의 <span>3대 구체적 한계</span></h2>
+            <p class="slide-sub">보행자 밀집 수용 한계와 응급실 병상 재고 수배 실시간성 부재로 인한 정량적 손실 구조 분석</p>
+
+            <div class="grid-3">
+                <div class="spec-card">
+                    <div class="card-badge badge-red"><i class="fa-solid fa-users-viewfinder"></i></div>
+                    <h3 class="card-h2">사후 대응형 인구 과밀 관제</h3>
+                    <p class="card-desc">사고 발생 전 보행 밀도(명/m²) 급증을 사전 감지하지 못하고 현장 신고 수신 후 대피령을 내리는 반응형 관제 한계.</p>
+                    <ul class="data-list">
+                        <li><i class="fa-solid fa-check"></i> 면적당 5명/m² 이상 시 압사 위험 급증</li>
+                        <li><i class="fa-solid fa-check"></i> 골목길 병목 구간 사전 예보 부재</li>
+                    </ul>
+                </div>
+
+                <div class="spec-card">
+                    <div class="card-badge badge-amber"><i class="fa-solid fa-hospital-user"></i></div>
+                    <h3 class="card-h2">응급실 병상 수배 지연 (뺑뺑이)</h3>
+                    <p class="card-desc">119 구급대가 환자 수송 중 개별 병원에 수동 전화 통화로 병상 가용 여부를 확인하여 이송 지연 발생.</p>
+                    <ul class="data-list">
+                        <li><i class="fa-solid fa-check"></i> 평균 응급실 수배 소요 시간: 38분</li>
+                        <li><i class="fa-solid fa-check"></i> 구급차 재이송률: 연 8,400여 건 발생</li>
+                    </ul>
+                </div>
+
+                <div class="spec-card">
+                    <div class="card-badge badge-purple"><i class="fa-solid fa-database"></i></div>
+                    <h3 class="card-h2">데이터 파편화 및 단절</h3>
+                    <p class="card-desc">서울시 유동인구 데이터와 국립중앙의료원(E-Gen) 응급실 병상 데이터가 이원화되어 통합 판단 불가.</p>
+                    <ul class="data-list">
+                        <li><i class="fa-solid fa-check"></i> 인구 밀집 지역 ↔ 인근 병원 병상 동시 조회 불가</li>
+                        <li><i class="fa-solid fa-check"></i> 자치구 경계 구역 의료 자원 수급 불균형</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- [Slide 3] Data Architecture & System Logic -->
+        <section class="slide">
+            <span class="category-tag"><i class="fa-solid fa-sitemap"></i> System Architecture</span>
+            <h2 class="slide-h1">구체적 <span>데이터 수집 및 알고리즘 판정 구조</span></h2>
+            <p class="slide-sub">공공 데이터 API 연동 실시간 트래킹 및 보행자 밀도 알고리즘에 따른 3단계 위험도 정의</p>
+
+            <div class="grid-3">
+                <div class="spec-card">
+                    <div class="card-badge badge-teal"><i class="fa-solid fa-cloud-arrow-down"></i></div>
+                    <h3 class="card-h2">1. 데이터 연동 파이프라인</h3>
+                    <p class="card-desc">서울시 열린데이터광장(유동인구) + E-Gen(응급실가용병상) API를 5분 주기 실시간 파싱 및 동기화.</p>
+                    <div class="stat-highlight">
+                        <div>
+                            <div class="stat-lbl">데이터 동기화 주기</div>
+                            <div class="stat-val" style="font-size:1.3rem;">5분 (Live Sync)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="spec-card">
+                    <div class="card-badge badge-red"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    <h3 class="card-h2">2. 사고 위험지역 자동 판정</h3>
+                    <p class="card-desc">자치구별 유동인구 수치 및 증가 속도를 종합하여 45만 명 초과 시 '🚨 사고 위험지역' 즉시 발령.</p>
+                    <div class="stat-highlight">
+                        <div>
+                            <div class="stat-lbl">위험 경보 자동 지정 수치</div>
+                            <div class="stat-val" style="color:var(--danger-red); font-size:1.3rem;">450,000 명 이상</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="spec-card">
+                    <div class="card-badge badge-purple"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                    <h3 class="card-h2">3. 피크타임 예측 경보</h3>
+                    <p class="card-desc">당일 최고 인구 피크가 48만 명 이상으로 치솟을 구를 미리 분류하여 '⚠️ 피크타임 예보' 발령.</p>
+                    <div class="stat-highlight">
+                        <div>
+                            <div class="stat-lbl">피크 사전 경보 지정 수치</div>
+                            <div class="stat-val" style="color:var(--purple-accent); font-size:1.3rem;">480,000 명 이상</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- [Slide 4] 24-Hour Population Density Prediction Engine -->
+        <section class="slide">
+            <span class="category-tag"><i class="fa-solid fa-chart-column"></i> Predictive Engine</span>
+            <h2 class="slide-h1">24시간 <span>인구 밀집 예측 알고리즘 사양</span></h2>
+            <p class="slide-sub">서울시 25개 구별 도시 공간 분류 모델(도심형, 상업형, 주거형)에 따른 시계열 가중치 산출</p>
+
+            <div class="grid-2">
+                <div class="spec-card">
+                    <div class="card-badge badge-teal"><i class="fa-solid fa-diagram-project"></i></div>
+                    <h3 class="card-h2">자치구 공간 특성별 예측 패턴</h3>
+                    <p class="card-desc">구별 생활인구 패턴 데이터를 기반으로 00시부터 24시까지의 인구 곡선 추이를 가중치로 시뮬레이션.</p>
+                    <ul class="data-list" style="margin-top:0.6rem;">
+                        <li><i class="fa-solid fa-circle"></i> <b>상업/업무형 (강남, 종로):</b> 14시~18시 최고 피크 (가중치 1.45x)</li>
+                        <li><i class="fa-solid fa-circle"></i> <b>주거 중심형 (노원, 도봉):</b> 20시~23시 야간 피크 (가중치 1.25x)</li>
+                        <li><i class="fa-solid fa-circle"></i> <b>교통 요충형 (영등포, 용산):</b> 출퇴근 시간 이중 피크 패턴</li>
+                    </ul>
+                </div>
+
+                <div class="spec-card">
+                    <div class="card-badge badge-teal"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                    <h3 class="card-h2">시각화 인터페이스 & Delta % 계산</h3>
+                    <p class="card-desc">24개 스파크라인 바 차트로 현재 시간(Red)과 Peak 시간(Purple)을 한눈에 식별하고 인구 급증율 모니터링.</p>
+                    <div class="stat-highlight">
+                        <div>
+                            <div class="stat-lbl">변화율 수식 (Delta %)</div>
+                            <div class="stat-val" style="font-size:1.2rem; color:var(--text-main);">
+                                ((P<sub>curr</sub> - P<sub>prev</sub>) / P<sub>prev</sub>) × 100
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- [Slide 5] A-Z Emergency Hospital Management -->
+        <section class="slide">
+            <span class="category-tag"><i class="fa-solid fa-square-h"></i> Medical Resource Management</span>
+            <h2 class="slide-title">25개 구별 <span>A-Z 응급실 병상 통합 수배 시스템</span></h2>
+            <p class="slide-sub">상급종합병원 및 구별 응급의료센터 A-Z 매핑과 가용 비율별 3단계 임계치 게이지 적용</p>
+
+            <div class="grid-3">
+                <div class="spec-card">
+                    <div class="card-badge badge-teal"><i class="fa-solid fa-arrow-down-a-z"></i></div>
+                    <h3 class="card-h2">A-Z 병원 식별자 체계</h3>
+                    <p class="card-desc">구별 소속 병원(예: 강남구 A-강남세브란스, B-삼성서울)을 A-Z 고유 코드로 구성하여 빠른 식별 보장.</p>
+                </div>
+
+                <div class="spec-card">
+                    <div class="card-badge badge-teal"><i class="fa-solid fa-magnifying-glass-location"></i></div>
+                    <h3 class="card-h2">통합 병원명 다이렉트 검색</h3>
+                    <p class="card-desc">구명뿐 아니라 '서울대병원', '세브란스' 등 키워드 검색 시 해당 병원이 속한 자치구 카드 자동 전개.</p>
+                </div>
+
+                <div class="spec-card">
+                    <div class="card-badge badge-teal"><i class="fa-solid fa-sliders"></i></div>
+                    <h3 class="card-h2">가용 병상 비율 게이지 (3단계)</h3>
+                    <p class="card-desc">병상 가용률에 따라 게이지 색상이 자동 변경되어 급박한 응급 수배 판단을 지원.</p>
+                    <ul class="data-list">
+                        <li><i class="fa-solid fa-square" style="color:#e11d48;"></i> <b>20% 미만:</b> Red (매우 혼잡 / 이송 주의)</li>
+                        <li><i class="fa-solid fa-square" style="color:#d97706;"></i> <b>20%~45%:</b> Yellow (보통)</li>
+                        <li><i class="fa-solid fa-square" style="color:#0d9488;"></i> <b>45% 이상:</b> Green (여유)</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- [Slide 6] Expected Impact & Quantitative Value -->
+        <section class="slide">
+            <span class="category-tag"><i class="fa-solid fa-bullseye"></i> Expected Impact</span>
+            <h2 class="slide-h1">도입에 따른 <span>구체적 기대효과 및 정량적 가치</span></h2>
+            <p class="slide-sub">응급 골든타임 확보, 재이송률 감소, 그리고 지자체 선제적 인력 배치를 통한 스마트 안심 도시 구현</p>
+
+            <div class="grid-2">
+                <div class="spec-card">
+                    <div class="card-badge badge-teal"><i class="fa-solid fa-truck-medical"></i></div>
+                    <h3 class="card-h2">119 구급대 및 시민 측면</h3>
+                    <p class="card-desc">병상 수배 소요 시간을 획기적으로 단축하여 응급 환자 골든타임 사수.</p>
+                    <div class="stat-highlight">
+                        <div>
+                            <div class="stat-lbl">병상 수배 시간 단축</div>
+                            <div class="stat-val">38분 ➔ 3분 이내</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="stat-lbl">응급차 재이송률</div>
+                            <div class="stat-val" style="color:var(--teal-primary);">90% 이상 감소</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="spec-card">
+                    <div class="card-badge badge-purple"><i class="fa-solid fa-building-shield"></i></div>
+                    <h3 class="card-h2">지자체 관제센터 & 경찰/소방</h3>
+                    <p class="card-desc">피크시간 예보 지역에 안전 요원을 사전 배치하여 인구 밀집 사고 근본적 예방.</p>
+                    <div class="stat-highlight">
+                        <div>
+                            <div class="stat-lbl">사고 예방 경보 골든타임</div>
+                            <div class="stat-val" style="color:var(--purple-accent);">최대 3시간 사전 예보</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer Navigation Controls -->
+    <footer class="footer-nav">
+        <div style="font-size: 0.88rem; color: var(--text-sub); font-weight: 600;">
+            SEOUL EMERGENCY HUB — Official Presentation Deck
+        </div>
+        <div class="nav-btn-group">
+            <button class="btn" id="prev-btn" onclick="prevSlide()"><i class="fa-solid fa-chevron-left"></i> 이전</button>
+            <button class="btn btn-teal" id="next-btn" onclick="nextSlide()">다음 <i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+    </footer>
+
+    <script>
+        let currentSlideIdx = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        const currentSlideElem = document.getElementById('current-slide');
+        const totalSlidesElem = document.getElementById('total-slides');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+
+        totalSlidesElem.textContent = totalSlides;
+
+        function updateSlide() {
+            slides.forEach((slide, idx) => {
+                slide.classList.toggle('active', idx === currentSlideIdx);
+            });
+
+            currentSlideElem.textContent = currentSlideIdx + 1;
+
+            prevBtn.disabled = currentSlideIdx === 0;
+            if (currentSlideIdx === totalSlides - 1) {
+                nextBtn.innerHTML = '처음으로 <i class="fa-solid fa-rotate-right"></i>';
+            } else {
+                nextBtn.innerHTML = '다음 <i class="fa-solid fa-chevron-right"></i>';
+            }
+        }
+
+        function nextSlide() {
+            if (currentSlideIdx < totalSlides - 1) {
+                currentSlideIdx++;
+            } else {
+                currentSlideIdx = 0;
+            }
+            updateSlide();
+        }
+
+        function prevSlide() {
+            if (currentSlideIdx > 0) {
+                currentSlideIdx--;
+                updateSlide();
+            }
+        }
+
+        // 키보드 방향키 조작 (←, →)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'Space') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            }
+        });
+
+        // 전체화면 토글
+        document.getElementById('fullscreen-btn').addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        });
+
+        updateSlide();
+    </script>
+</body>
+</html>

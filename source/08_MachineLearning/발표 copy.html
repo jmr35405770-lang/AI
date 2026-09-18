@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seoul Emergency Hub - PPT Presentation</title>
+    <!-- Pretendard Font & FontAwesome Icons -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-main: #0b0f19;
+            --card-bg: rgba(22, 30, 49, 0.85);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            
+            --accent-blue: #3b82f6;
+            --accent-red: #ef4444;
+            --accent-green: #10b981;
+            --accent-yellow: #f59e0b;
+            --accent-purple: #8b5cf6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* Ambient Glow Background */
+        .ambient-glow {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+            top: -100px;
+            left: -100px;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .ambient-glow-2 {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(239, 68, 68, 0.12) 0%, transparent 70%);
+            bottom: -100px;
+            right: -100px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Top Header Navigation */
+        .ppt-header {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 3rem;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(11, 15, 25, 0.8);
+            backdrop-filter: blur(10px);
+        }
+
+        .ppt-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 1.2rem;
+            font-weight: 800;
+        }
+        .ppt-brand i { color: var(--accent-blue); }
+        .ppt-brand span { color: var(--accent-blue); }
+
+        .slide-counter {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Slide Container Frame */
+        .presentation-frame {
+            position: relative;
+            z-index: 5;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 4rem;
+        }
+
+        .slide {
+            display: none;
+            width: 100%;
+            max-width: 1200px;
+            height: 100%;
+            max-height: 650px;
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Common Slide Typography */
+        .slide-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--accent-blue);
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 0.8rem;
+        }
+
+        .slide-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            line-height: 1.25;
+            margin-bottom: 1rem;
+            letter-spacing: -0.5px;
+        }
+
+        .slide-title span {
+            color: var(--accent-blue);
+        }
+
+        .slide-desc {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            max-width: 800px;
+        }
+
+        /* Slide Content Cards & Grids */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.8rem;
+            backdrop-filter: blur(12px);
+            transition: transform 0.2s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .bg-blue { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); }
+        .bg-red { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); }
+        .bg-green { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+        .bg-purple { background: rgba(139, 92, 246, 0.15); color: var(--accent-purple); }
+
+        .card-h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.6rem;
+        }
+
+        .card-p {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Slide 1 Cover Design */
+        .cover-slide {
+            text-align: center;
+            align-items: center;
+        }
+
+        .cover-badge {
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: var(--accent-blue);
+            padding: 0.5rem 1.2rem;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+
+        .cover-title {
+            font-size: 3.8rem;
+            font-weight: 900;
+            line-height: 1.15;
+            margin-bottom: 1.2rem;
+            letter-spacing: -1px;
+        }
+
+        .cover-sub {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+            max-width: 680px;
+        }
+
+        /* Metric Highlight Box */
+        .metric-box {
+            background: rgba(11, 15, 25, 0.6);
+            border: 1px solid var(--border-color);
+            padding: 1.2rem;
+            border-radius: 12px;
+            margin-top: 1rem;
+        }
+
+        .metric-val {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--accent-red);
+        }
+
+        .metric-lbl {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* Visual Sparkline Demo (Slide 4) */
+        .spark-demo {
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            height: 60px;
+            margin-top: 1rem;
+            padding-top: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .spark-bar {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 2px 2px 0 0;
+        }
+        .spark-bar.active { background: var(--accent-red); }
+        .spark-bar.peak { background: var(--accent-purple); }
+
+        /* Bottom Controls Bar */
+        .ppt-footer {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.2rem 3rem;
+            border-top: 1px solid var(--border-color);
+            background: rgba(11, 15, 25, 0.9);
+        }
+
+        .nav-btns {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+        }
+        .btn-primary:hover:not(:disabled) {
+            background: #2563eb;
+        }
+
+        .fullscreen-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: color 0.2s;
+        }
+        .fullscreen-btn:hover { color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="ambient-glow"></div>
+    <div class="ambient-glow-2"></div>
+
+    <!-- Header Navigation -->
+    <header class="ppt-header">
+        <div class="ppt-brand">
+            <i class="fa-solid fa-hospital-user"></i>
+            SEOUL <span>EMERGENCY HUB</span>
+        </div>
+        <div class="slide-counter" id="slide-counter">
+            Slide <span id="current-slide">1</span> / <span id="total-slides">6</span>
+        </div>
+        <button class="fullscreen-btn" id="fullscreen-btn" title="전체화면"><i class="fa-solid fa-expand"></i></button>
+    </header>
+
+    <!-- Slide Presentation Main Frame -->
+    <main class="presentation-frame">
+        
+        <!-- [Slide 1] Cover -->
+        <section class="slide active cover-slide">
+            <span class="cover-badge"><i class="fa-solid fa-shield-halved"></i> 서울시 실시간 의료 및 위험 관제 시스템</span>
+            <h1 class="cover-title">SEOUL <span style="color: var(--accent-blue);">EMERGENCY HUB</span></h1>
+            <p class="cover-sub">유동인구 24시간 예측 및 구별 A-Z 응급실 병상 통합 관제 대시보드</p>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn btn-primary" onclick="nextSlide()">발표 시작하기 <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+        </section>
+
+        <!-- [Slide 2] Background & Problem Statement -->
+        <section class="slide">
+            <span class="slide-tag"><i class="fa-solid fa-triangle-exclamation"></i> Background & Problem</span>
+            <h2 class="slide-title">왜 <span>실시간 예측 관제</span>가 필요한가?</h2>
+            <p class="slide-desc">인구밀집 사고 발생 시 골든타임 확보를 방해하는 기존 시스템의 명확한 문제점</p>
+            
+            <div class="grid-3">
+                <div class="feature-card">
+                    <div class="card-icon bg-red"><i class="fa-solid fa-users-slash"></i></div>
+                    <h3 class="card-h3">사고 위험 감지 지연</h3>
+                    <p class="card-p">특정 시간대 유동인구 급증으로 인한 골목 및 행사장의 인구 과밀 위험을 사전 예측하기 어려움.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon bg-red"><i class="fa-solid fa-truck-medical"></i></div>
+                    <h3 class="card-h3">응급실 병상 수배 지연</h3>
+                    <p class="card-p">119 구급대 및 환자 수송 시 자치구 및 병원별 잔여 응급 병상을 한눈에 파악하기 힘듦.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon bg-red"><i class="fa-solid fa-chart-line"></i></div>
+                    <h3 class="card-h3">지역별 의료 편차</h3>
+                    <p class="card-p">서울시 25개 자치구별로 위험 수준과 의료 자원 가용성 격차가 상존하여 통합 대응 필요.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- [Slide 3] Core Solution & System Logic -->
+        <section class="slide">
+            <span class="slide-tag"><i class="fa-solid fa-lightbulb"></i> Core Solution</span>
+            <h2 class="slide-title">인구 밀집과 응급실 데이터를 <span>하나로 연동</span></h2>
+            <p class="slide-desc">실시간 유동인구 임계치 및 응급 병상 가용 수치를 결합한 맞춤형 관제 로직</p>
+            
+            <div class="grid-2">
+                <div class="feature-card">
+                    <div class="card-icon bg-red"><i class="fa-solid fa-people-roof"></i></div>
+                    <h3 class="card-h3">유동인구 45만 명 기준 사고 위험 감지</h3>
+                    <p class="card-p">자치구 유동인구가 45만 명을 초과하면 <b>🚨 사고 위험지역</b> 배너와 글라이딩 경고 효과가 자동으로 발동됩니다.</p>
+                    <div class="metric-box">
+                        <div class="metric-val">450,000 명+</div>
+                        <div class="metric-lbl">사고 위험지역 지정 자동 임계치</div>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="card-icon bg-purple"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                    <h3 class="card-h3">피크타임 밀집 사고 사전 예측</h3>
+                    <p class="card-p">하루 중 최고 피크 인구가 48만 명 이상으로 예측되는 경우, <b>⚠️ 피크타임 밀집 경보</b>를 선제적으로 발생시킵니다.</p>
+                    <div class="metric-box">
+                        <div class="metric-val" style="color: var(--accent-purple);">480,000 명+</div>
+                        <div class="metric-lbl">피크타임 밀집 사고 사전 경보 임계치</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- [Slide 4] 24-Hour Population Trend & Prediction -->
+        <section class="slide">
+            <span class="slide-tag"><i class="fa-solid fa-chart-simple"></i> Predictive Analytics</span>
+            <h2 class="slide-title">24시간 <span>인구 밀집 예측 그래프</span></h2>
+            <p class="slide-desc">서울시 25개 구별 도시 특성을 반영한 시간대별(00시~24시) 유동인구 추이 모니터링</p>
+
+            <div class="grid-2">
+                <div class="feature-card">
+                    <div class="card-icon bg-blue"><i class="fa-solid fa-sliders"></i></div>
+                    <h3 class="card-h3">시간대별 스파크라인 차트</h3>
+                    <p class="card-p">각 자치구 카드에서 '24시간 인구 밀집 예측 보기'를 클릭하면 00시부터 24시까지의 시계열 유동인구 그래프가 펼쳐집니다.</p>
+                    <div class="spark-demo">
+                        <div class="spark-bar" style="height:30%"></div>
+                        <div class="spark-bar" style="height:20%"></div>
+                        <div class="spark-bar" style="height:40%"></div>
+                        <div class="spark-bar active" style="height:85%"></div>
+                        <div class="spark-bar peak" style="height:100%"></div>
+                        <div class="spark-bar" style="height:70%"></div>
+                        <div class="spark-bar" style="height:45%"></div>
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:8px; display:flex; justify-shadow:space-between;">
+                        <span>Red: 현재 시각</span>
+                        <span style="margin-left:auto;">Purple: 최고 피크 시간</span>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="card-icon bg-green"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                    <h3 class="card-h3">전시각 대비 증감율 (Delta %)</h3>
+                    <p class="card-p">지난 시간 대비 인구 변화량(▲ +14.2%)을 지속적으로 실시간 트래킹하여 인구 밀집 급증 지역을 손쉽게 필터링합니다.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- [Slide 5] A-Z Hospital Capacity System -->
+        <section class="slide">
+            <span class="slide-tag"><i class="fa-solid fa-hospital"></i> A-Z Emergency Status</span>
+            <h2 class="slide-title">25개 자치구 <span>소속 병원 A-Z 병상 상세</span></h2>
+            <p class="slide-desc">신촌세브란스, 서울아산, 삼성서울 등 상급종합병원 포함 구별 실시간 잔여 응급 병상 정보</p>
+
+            <div class="grid-3">
+                <div class="feature-card">
+                    <div class="card-icon bg-blue"><i class="fa-solid fa-list-ol"></i></div>
+                    <h3 class="card-h3">구별 A-Z 병원 연동</h3>
+                    <p class="card-p">강남구(A-강남세브란스, B-삼성서울), 종로구(A-서울대병원) 등 자치구별 대표 병원 데이터를 정리 및 수집.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon bg-green"><i class="fa-solid fa-magnifying-glass"></i></div>
+                    <h3 class="card-h3">통합 병원명 검색</h3>
+                    <p class="card-p">구 이름뿐만 아니라 '서울대병원', '강남세브란스' 등 특정 병원 이름을 검색창에 직접 입력하여 위치 수배 가능.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon bg-red"><i class="fa-solid fa-gauge-high"></i></div>
+                    <h3 class="card-h3">직관적 비율 게이지</h3>
+                    <p class="card-p">가용률 20% 미만(Red 위험), 45% 미만(Yellow 주의), 정상(Green) 시각화 프로그레스 바 적용.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- [Slide 6] Expected Impact & Conclusion -->
+        <section class="slide">
+            <span class="slide-tag"><i class="fa-solid fa-circle-check"></i> Expected Impact</span>
+            <h2 class="slide-title">데이터 기반의 <span>스마트 안전도시 서울</span></h2>
+            <p class="slide-desc">시민, 119 구급대, 지자체 관제센터 모두를 위한 혁신적 가치 창출</p>
+
+            <div class="grid-2">
+                <div class="feature-card">
+                    <div class="card-icon bg-blue"><i class="fa-solid fa-user-shield"></i></div>
+                    <h3 class="card-h3">119 구급대 & 시민</h3>
+                    <p class="card-p">응급 환자 발생 시 골든타임 내에 가용 병상을 가진 가장 가까운 A-Z 병원으로 즉시 이송 경로 확보.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="card-icon bg-purple"><i class="fa-solid fa-building-shield"></i></div>
+                    <h3 class="card-h3">지자체 & 관제센터</h3>
+                    <p class="card-p">피크타임 밀집 사고 예측 경보를 기반으로 소방/경찰 인력을 과밀 예상 지역에 선제 배치하여 사고 예방.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer Controls -->
+    <footer class="ppt-footer">
+        <div style="font-size: 0.85rem; color: var(--text-secondary);">
+            Seoul Emergency Hub Presentation Deck
+        </div>
+        <div class="nav-btns">
+            <button class="btn" id="prev-btn" onclick="prevSlide()"><i class="fa-solid fa-chevron-left"></i> 이전</button>
+            <button class="btn btn-primary" id="next-btn" onclick="nextSlide()">다음 <i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+    </footer>
+
+    <script>
+        let currentSlideIdx = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        const currentSlideElem = document.getElementById('current-slide');
+        const totalSlidesElem = document.getElementById('total-slides');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+
+        totalSlidesElem.textContent = totalSlides;
+
+        function updateSlide() {
+            slides.forEach((slide, idx) => {
+                slide.classList.toggle('active', idx === currentSlideIdx);
+            });
+
+            currentSlideElem.textContent = currentSlideIdx + 1;
+
+            prevBtn.disabled = currentSlideIdx === 0;
+            if (currentSlideIdx === totalSlides - 1) {
+                nextBtn.innerHTML = '처음으로 <i class="fa-solid fa-rotate-right"></i>';
+            } else {
+                nextBtn.innerHTML = '다음 <i class="fa-solid fa-chevron-right"></i>';
+            }
+        }
+
+        function nextSlide() {
+            if (currentSlideIdx < totalSlides - 1) {
+                currentSlideIdx++;
+            } else {
+                currentSlideIdx = 0;
+            }
+            updateSlide();
+        }
+
+        function prevSlide() {
+            if (currentSlideIdx > 0) {
+                currentSlideIdx--;
+                updateSlide();
+            }
+        }
+
+        // 키보드 방향키 조작 (←, →)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'Space') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            }
+        });
+
+        // 전체화면 토글
+        document.getElementById('fullscreen-btn').addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        });
+
+        updateSlide();
+    </script>
+</body>
+</html>
