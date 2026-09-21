@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>서울특별시 25개 구 실시간 유동인구 & AI 인구밀집 예측 관제 센터</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Pretendard Font -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-base: #080c14;
+            --card-bg: rgba(15, 23, 42, 0.82);
+            --card-border: rgba(255, 255, 255, 0.09);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            
+            --color-green: #10b981;
+            --color-yellow: #f59e0b;
+            --color-red: #ef4444;
+            --color-blue: #3b82f6;
+            --color-purple: #a855f7;
+            --color-cyan: #06b6d4;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            background-image: 
+                radial-gradient(at 50% 0%, rgba(59, 130, 246, 0.16) 0px, transparent 65%),
+                radial-gradient(at 80% 50%, rgba(168, 85, 247, 0.12) 0px, transparent 60%),
+                radial-gradient(at 20% 100%, rgba(239, 68, 68, 0.14) 0px, transparent 65%);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2.5rem 0;
+        }
+
+        .dashboard-wrapper {
+            max-width: 1420px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Center Aligned Header */
+        .header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding-bottom: 2.2rem;
+            border-bottom: 1px solid var(--card-border);
+            margin-bottom: 2rem;
+        }
+
+        .brand {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.9rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .brand-icon {
+            font-size: 2.8rem;
+            color: var(--color-blue);
+            background: rgba(59, 130, 246, 0.15);
+            padding: 1.1rem;
+            border-radius: 24px;
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+            border: 1px solid rgba(59, 130, 246, 0.35);
+        }
+
+        .brand-text h1 {
+            font-size: 2.4rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+
+        .brand-text h1 span {
+            background: linear-gradient(135deg, #60a5fa 0%, #a855f7 50%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-text p {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            margin-top: 6px;
+        }
+
+        .header-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.2rem;
+            flex-wrap: wrap;
+        }
+
+        .live-badge {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--color-red);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            padding: 0.45rem 1.1rem;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .live-badge .dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--color-red);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--color-red);
+            animation: blink 1.2s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(0.8); }
+        }
+
+        .clock {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.04);
+            padding: 0.45rem 1.1rem;
+            border-radius: 20px;
+            border: 1px solid var(--card-border);
+        }
+
+        /* Center Aligned Summary Cards Grid */
+        .summary-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 18px;
+            padding: 1.4rem 1.2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            backdrop-filter: blur(14px);
+            transition: all 0.25s ease;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(255, 255, 255, 0.18);
+        }
+
+        .sc-icon {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+            color: var(--color-blue);
+        }
+
+        .summary-card.danger .sc-icon { color: var(--color-red); }
+        .summary-card.warning .sc-icon { color: var(--color-yellow); }
+        .summary-card.purple .sc-icon { color: var(--color-purple); }
+        .summary-card.cyan .sc-icon { color: var(--color-cyan); }
+        .summary-card.success .sc-icon { color: var(--color-green); }
+
+        .sc-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .sc-val {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-top: 0.3rem;
+            color: var(--text-primary);
+        }
+
+        .summary-card.danger .sc-val { color: var(--color-red); }
+        .summary-card.warning .sc-val { color: var(--color-yellow); }
+        .summary-card.purple .sc-val { color: var(--color-purple); }
+        .summary-card.cyan .sc-val { color: var(--color-cyan); }
+        .summary-card.success .sc-val { color: var(--color-green); }
+
+        /* Control Panel */
+        .control-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.2rem;
+            margin-bottom: 2.5rem;
+            max-width: 980px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .search-wrap {
+            width: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-wrap i {
+            position: absolute;
+            left: 1.4rem;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .search-wrap input {
+            width: 100%;
+            padding: 1.1rem 1.2rem 1.1rem 3.4rem;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            color: var(--text-primary);
+            font-size: 1.02rem;
+            outline: none;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .search-wrap input::placeholder {
+            text-align: center;
+            color: #64748b;
+        }
+
+        .search-wrap input:focus {
+            border-color: var(--color-blue);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.18);
+            background: rgba(22, 32, 54, 0.95);
+        }
+
+        .filter-wrap {
+            display: flex;
+            justify-content: center;
+            gap: 0.8rem;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .filter-wrap select {
+            flex: 1;
+            min-width: 180px;
+            padding: 0.9rem 1.1rem;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            color: var(--text-primary);
+            font-size: 0.92rem;
+            outline: none;
+            cursor: pointer;
+            text-align-last: center;
+            transition: all 0.2s;
+        }
+
+        .filter-wrap select:focus {
+            border-color: var(--color-blue);
+        }
+
+        /* District Card Grid */
+        .district-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(390px, 1fr));
+            gap: 1.6rem;
+        }
+
+        .district-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .district-card.accident-danger-card {
+            border-color: rgba(239, 68, 68, 0.45);
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.18);
+        }
+
+        .district-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.85rem;
+            padding-bottom: 0.85rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .district-title {
+            display: flex;
+            align-items: baseline;
+            gap: 0.6rem;
+        }
+
+        .district-name {
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+        }
+
+        .zone-tag {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.06);
+            padding: 3px 9px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .risk-badge {
+            padding: 0.38rem 0.85rem;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .risk-badge.low { background: rgba(16, 185, 129, 0.15); color: var(--color-green); border: 1px solid rgba(16, 185, 129, 0.35); }
+        .risk-badge.medium { background: rgba(245, 158, 11, 0.15); color: var(--color-yellow); border: 1px solid rgba(245, 158, 11, 0.35); }
+        .risk-badge.high { background: rgba(239, 68, 68, 0.15); color: var(--color-red); border: 1px solid rgba(239, 68, 68, 0.35); }
+
+        /* Floating Population Banner & Alert */
+        .pop-banner {
+            background: rgba(15, 23, 42, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 0.85rem 1rem;
+            margin-bottom: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pop-banner.danger {
+            background: rgba(239, 68, 68, 0.12);
+            border-color: rgba(239, 68, 68, 0.35);
+        }
+
+        .pop-banner.warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        .pop-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pop-label {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .pop-value-row {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin-top: 2px;
+        }
+
+        .pop-value {
+            font-size: 1.18rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .trend-delta {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
+
+        .trend-delta.up { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+        .trend-delta.down { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+
+        .accident-alert-banner {
+            background: linear-gradient(90deg, rgba(239, 68, 68, 0.25), rgba(245, 158, 11, 0.25));
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            color: #fca5a5;
+            padding: 0.5rem 0.8rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 0.85rem;
+            animation: pulseBanner 2s infinite ease-in-out;
+        }
+
+        @keyframes pulseBanner {
+            0%, 100% { border-color: rgba(239, 68, 68, 0.5); box-shadow: 0 0 10px rgba(239, 68, 68, 0.2); }
+            50% { border-color: rgba(239, 68, 68, 0.9); box-shadow: 0 0 18px rgba(239, 68, 68, 0.4); }
+        }
+
+        /* 24-Hour Population Prediction Chart Section */
+        .chart-toggle-btn {
+            width: 100%;
+            margin-top: 0.5rem;
+            margin-bottom: 0.6rem;
+            padding: 0.65rem;
+            background: rgba(168, 85, 247, 0.1);
+            border: 1px solid rgba(168, 85, 247, 0.28);
+            color: #c084fc;
+            border-radius: 12px;
+            font-size: 0.83rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .chart-toggle-btn:hover {
+            background: rgba(168, 85, 247, 0.22);
+            color: #ffffff;
+            border-color: rgba(168, 85, 247, 0.5);
+        }
+
+        .prediction-box {
+            display: none;
+            background: rgba(8, 12, 20, 0.85);
+            border: 1px solid rgba(168, 85, 247, 0.2);
+            border-radius: 14px;
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .prediction-box.open {
+            display: block;
+        }
+
+        .peak-tags-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            font-size: 0.78rem;
+        }
+
+        .peak-tag {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fcd34d;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+        }
+
+        /* Sparkline Bar Chart Matrix */
+        .bars-container {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            height: 68px;
+            gap: 3px;
+            padding: 4px 2px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .bar-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            justify-content: flex-end;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .bar-fill {
+            width: 100%;
+            background: rgba(59, 130, 246, 0.45);
+            border-radius: 3px 3px 0 0;
+            transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .bar-col.now .bar-fill {
+            background: linear-gradient(180deg, #ef4444, #f59e0b);
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
+        }
+
+        .bar-col.peak .bar-fill {
+            background: linear-gradient(180deg, #a855f7, #3b82f6);
+        }
+
+        .bar-col:hover .bar-fill {
+            background: #60a5fa;
+        }
+
+        /* Tooltip on bar hover */
+        .bar-col:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 3px 6px;
+            font-size: 0.68rem;
+            border-radius: 4px;
+            white-space: nowrap;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        .bars-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.68rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        /* ER Gauge Section */
+        .er-box {
+            background: rgba(9, 13, 22, 0.65);
+            border-radius: 14px;
+            padding: 1rem;
+            margin-top: 0.4rem;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .er-title-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .fill-low { background: linear-gradient(90deg, #059669, #10b981); }
+        .fill-medium { background: linear-gradient(90deg, #d97706, #f59e0b); }
+        .fill-high { background: linear-gradient(90deg, #dc2626, #ef4444); }
+
+        /* Hospital List Toggle & Detail */
+        .hospital-toggle-btn {
+            width: 100%;
+            margin-top: 0.8rem;
+            padding: 0.65rem;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.28);
+            color: #60a5fa;
+            border-radius: 12px;
+            font-size: 0.83rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .hospital-toggle-btn:hover {
+            background: rgba(59, 130, 246, 0.22);
+            color: #ffffff;
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+
+        .hospital-list {
+            display: none;
+            margin-top: 0.8rem;
+            padding-top: 0.8rem;
+            border-top: 1px dashed rgba(255, 255, 255, 0.1);
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .hospital-list.open {
+            display: block;
+        }
+
+        .hospital-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.55rem 0.7rem;
+            border-radius: 10px;
+            font-size: 0.83rem;
+            background: rgba(255, 255, 255, 0.035);
+            margin-bottom: 0.45rem;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            transition: background 0.15s;
+        }
+
+        .hospital-item:hover {
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+        .hospital-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .hospital-beds {
+            font-weight: 700;
+            letter-spacing: -0.2px;
+        }
+
+        .hospital-beds.low-beds { color: #f87171; }
+        .hospital-beds.mid-beds { color: #fbbf24; }
+        .hospital-beds.good-beds { color: #34d399; }
+
+        .hospital-list::-webkit-scrollbar { width: 4px; }
+        .hospital-list::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.15); border-radius: 4px; }
+        .hospital-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.25); border-radius: 4px; }
+
+        @media (max-width: 640px) {
+            .filter-wrap { flex-direction: column; }
+            .brand-text h1 { font-size: 1.8rem; }
+            .district-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <!-- 메인 관제 센터 헤더 (중앙 정렬) -->
+        <header class="header">
+            <div class="brand">
+                <i class="fa-solid fa-chart-line brand-icon"></i>
+                <div class="brand-text">
+                    <h1>SEOUL <span>AI EMERGENCY & POPULATION PREDICT</span></h1>
+                    <p>서울특별시 25개 자치구 실시간 유동인구 · 24시간 밀집 예측 · 사고 위험지역 · A-Z 응급 병상</p>
+                </div>
+            </div>
+            <div class="header-status">
+                <span class="live-badge"><span class="dot"></span> 24H PREDICTIVE AI DENSITY MODEL</span>
+                <span class="clock" id="clock"><i class="fa-regular fa-clock"></i> --:--:--</span>
+            </div>
+        </header>
+
+        <!-- 핵심 요약 매트릭스 -->
+        <section class="summary-bar">
+            <div class="summary-card purple">
+                <i class="fa-solid fa-users-viewfinder sc-icon"></i>
+                <span class="sc-label">서울 총 유동인구</span>
+                <strong class="sc-val" id="total-pop-count">0명</strong>
+            </div>
+            <div class="summary-card danger">
+                <i class="fa-solid fa-triangle-exclamation sc-icon"></i>
+                <span class="sc-label">🚨 사고 위험지역 (45만↑)</span>
+                <strong class="sc-val" id="accident-risk-count">0곳</strong>
+            </div>
+            <div class="summary-card cyan">
+                <i class="fa-solid fa-business-time sc-icon"></i>
+                <span class="sc-label">⚠️ 피크시간 사고 주의 (예측)</span>
+                <strong class="sc-val" id="peak-risk-count">0곳</strong>
+            </div>
+            <div class="summary-card warning">
+                <i class="fa-solid fa-circle-exclamation sc-icon"></i>
+                <span class="sc-label">응급실 혼잡 구</span>
+                <strong class="sc-val" id="high-er-count">0곳</strong>
+            </div>
+            <div class="summary-card success">
+                <i class="fa-solid fa-bed-pulse sc-icon"></i>
+                <span class="sc-label">서울 총 응급 가용 병상</span>
+                <strong class="sc-val" id="total-beds-count">0석</strong>
+            </div>
+        </section>
+
+        <!-- 컨트롤 패널 (검색 / 정렬 / 조건 필터) -->
+        <section class="control-panel">
+            <div class="search-wrap">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="search-input" placeholder="25개 자치구 또는 병원 이름 검색 (예: 강남구, 종로구, 서울대병원, 신촌세브란스...)">
+            </div>
+            <div class="filter-wrap">
+                <select id="zone-filter">
+                    <option value="all">전체 권역 보기 (25개 자치구)</option>
+                    <option value="도심권">도심권 (종로, 중구, 용산)</option>
+                    <option value="동북권">동북권 (성동, 광진, 동대문, 중랑, 성북, 강북, 도봉, 노원)</option>
+                    <option value="서북권">서북권 (은평, 서대문, 마포)</option>
+                    <option value="서남권">서남권 (양천, 강서, 구로, 금천, 영등포, 동작, 관악)</option>
+                    <option value="동남권">동남권 (서초, 강남, 송파, 강동)</option>
+                </select>
+                <select id="risk-filter">
+                    <option value="all">전체 위험도 보기</option>
+                    <option value="accident">🚨 사고 위험지역 (현재 45만↑)</option>
+                    <option value="peak-danger">⚠️ 피크시간 위험예측 구</option>
+                    <option value="high">🚑 응급실 혼잡 (High)</option>
+                    <option value="medium">⚠️ 응급실 주의 (Medium)</option>
+                    <option value="low">✅ 응급실 원활 (Low)</option>
+                </select>
+                <select id="sort-filter">
+                    <option value="default">기본 정렬 (권역순)</option>
+                    <option value="pop-desc">유동인구 높은순 ⬇</option>
+                    <option value="pop-asc">유동인구 낮은순 ⬆</option>
+                    <option value="delta-desc">증가율 높은순 (밀집 급증) ⚡</option>
+                    <option value="beds-asc">가용병상 적은순 (혼잡) ⬇</option>
+                </select>
+            </div>
+        </section>
+
+        <!-- 서울 25개 자치구 카드 그리드 -->
+        <section class="district-grid" id="district-grid">
+            <!-- JavaScript rendering target -->
+        </section>
+    </div>
+
+    <script>
+        
+        // 24시간 인구밀집 예측 곡선 생성 함수 (업무지구/주거지구/상업지구 특성 반영)
+        function generate24HourCurve(type, basePop) {
+            let multipliers = [];
+            if (type === "office") {
+                // 오피스/상업 중심 (강남, 종로, 영등포, 중구 등): 08:00~10:00 출근 피크, 18:00~20:00 퇴근 피크
+                multipliers = [
+                    0.25, 0.20, 0.18, 0.18, 0.22, 0.35, 0.60, 0.85, 1.25, 1.35, 
+                    1.28, 1.22, 1.20, 1.22, 1.25, 1.28, 1.30, 1.38, 1.25, 0.95, 
+                    0.75, 0.55, 0.42, 0.32
+                ];
+            } else if (type === "residential") {
+                // 주거지구 중심 (송파, 노원, 강동, 양천 등): 야간/아침 높음, 주중 낮 감소
+                multipliers = [
+                    1.15, 1.18, 1.18, 1.15, 1.10, 0.95, 0.85, 0.75, 0.65, 0.60, 
+                    0.62, 0.65, 0.68, 0.65, 0.65, 0.70, 0.80, 0.95, 1.10, 1.18, 
+                    1.20, 1.18, 1.15, 1.12
+                ];
+            } else {
+                // 혼합 및 유흥/문화지구 (마포, 관악, 광진 등): 야간/저녁 피크
+                multipliers = [
+                    0.50, 0.35, 0.28, 0.25, 0.30, 0.45, 0.65, 0.80, 0.95, 1.00, 
+                    1.05, 1.10, 1.15, 1.12, 1.15, 1.18, 1.25, 1.32, 1.35, 1.30, 
+                    1.15, 0.95, 0.78, 0.62
+                ];
+            }
+
+            return multipliers.map(m => Math.round(basePop * m));
+        }
+
+        // 서울 25개 구 전체 데이터셋
+        const seoulDistricts = [
+            // 동남권
+            { 
+                name: "강남구", zone: "동남권", residentPop: "542,100명", basePop: 520000, type: "office", peakInfo: "08~10시 출근 / 18~20시 퇴근 피크",
+                hospitals: [
+                    { name: "A-강남세브란스병원", avail: 3, total: 32 },
+                    { name: "B-삼성서울병원", avail: 4, total: 40 },
+                    { name: "C-강남베드로병원", avail: 5, total: 20 }
+                ]
+            },
+            { 
+                name: "송파구", zone: "동남권", residentPop: "658,100명", basePop: 450000, type: "residential", peakInfo: "19~22시 야간 주거지 밀집",
+                hospitals: [
+                    { name: "A-서울아산병원", avail: 8, total: 75 },
+                    { name: "B-국립경찰병원", avail: 9, total: 35 },
+                    { name: "C-송파사랑병원", avail: 4, total: 15 }
+                ]
+            },
+            { 
+                name: "서초구", zone: "동남권", residentPop: "408,400명", basePop: 410000, type: "office", peakInfo: "08~10시 출근 / 18~20시 교대 피크",
+                hospitals: [
+                    { name: "A-가톨릭대학교 서울성모병원", avail: 14, total: 45 },
+                    { name: "B-서초참병원", avail: 7, total: 18 }
+                ]
+            },
+            { 
+                name: "강동구", zone: "동남권", residentPop: "461,200명", basePop: 330000, type: "residential", peakInfo: "19~21시 퇴근 후 환류 피크",
+                hospitals: [
+                    { name: "A-강동경희대학교병원", avail: 9, total: 25 },
+                    { name: "B-강동성심병원", avail: 11, total: 28 },
+                    { name: "C-중앙보훈병원", avail: 14, total: 35 }
+                ]
+            },
+
+            // 도심권
+            { 
+                name: "종로구", zone: "도심권", residentPop: "140,400명", basePop: 390000, type: "office", peakInfo: "09~11시 업무 / 14~16시 관광 피크",
+                hospitals: [
+                    { name: "A-서울대학교병원", avail: 6, total: 65 },
+                    { name: "B-강북삼성병원", avail: 5, total: 25 },
+                    { name: "C-세란병원", avail: 3, total: 12 }
+                ]
+            },
+            { 
+                name: "중구", zone: "도심권", residentPop: "120,300명", basePop: 380000, type: "office", peakInfo: "09~12시 상업 및 오피스 집중",
+                hospitals: [
+                    { name: "A-국립중앙의료원", avail: 14, total: 35 },
+                    { name: "B-서울백병원센터", avail: 8, total: 15 }
+                ]
+            },
+            { 
+                name: "용산구", zone: "도심권", residentPop: "218,200명", basePop: 280000, type: "mixed", peakInfo: "18~22시 이태원/용리단길 피크",
+                hospitals: [
+                    { name: "A-순천향대학교 서울병원", avail: 18, total: 36 }
+                ]
+            },
+
+            // 서북권
+            { 
+                name: "마포구", zone: "서북권", residentPop: "368,300명", basePop: 380000, type: "mixed", peakInfo: "18~23시 홍대/합정 야간 피크",
+                hospitals: [
+                    { name: "A-신촌연세병원", avail: 10, total: 22 },
+                    { name: "B-마포세브란스헬스센터", avail: 9, total: 20 }
+                ]
+            },
+            { 
+                name: "서대문구", zone: "서북권", residentPop: "306,100명", basePop: 320000, type: "office", peakInfo: "09~14시 신촌 대학가 밀집",
+                hospitals: [
+                    { name: "A-신촌세브란스병원", avail: 7, total: 60 },
+                    { name: "B-동신병원", avail: 5, total: 25 }
+                ]
+            },
+            { 
+                name: "은평구", zone: "서북권", residentPop: "468,200명", basePop: 280000, type: "residential", peakInfo: "19~21시 주거지 정체 피크",
+                hospitals: [
+                    { name: "A-가톨릭대학교 은평성모병원", avail: 13, total: 38 },
+                    { name: "B-청구성심병원", avail: 9, total: 20 }
+                ]
+            },
+
+            // 서남권
+            { 
+                name: "영등포구", zone: "서남권", residentPop: "375,100명", basePop: 400000, type: "office", peakInfo: "08~10시 여의도 금융가 출근 피크",
+                hospitals: [
+                    { name: "A-가톨릭대학교 여의도성모병원", avail: 11, total: 32 },
+                    { name: "B-한림대학교 강남성심병원", avail: 10, total: 28 },
+                    { name: "C-명지성모병원", avail: 8, total: 18 }
+                ]
+            },
+            { 
+                name: "관악구", zone: "서남권", residentPop: "487,100명", basePop: 390000, type: "mixed", peakInfo: "18~22시 샤로수길/신림 심야 피크",
+                hospitals: [
+                    { name: "A-에이치플러스 양지병원", avail: 4, total: 28 },
+                    { name: "B-관악사랑병원", avail: 5, total: 20 }
+                ]
+            },
+            { 
+                name: "강서구", zone: "서남권", residentPop: "570,400명", basePop: 380000, type: "residential", peakInfo: "07~09시 / 19~21시 출퇴근 피크",
+                hospitals: [
+                    { name: "A-이화여자대학교 서울병원", avail: 15, total: 42 },
+                    { name: "B-부민병원", avail: 11, total: 28 },
+                    { name: "C-우리들병원", avail: 9, total: 20 }
+                ]
+            },
+            { 
+                name: "구로구", zone: "서남권", residentPop: "395,200명", basePop: 310000, type: "office", peakInfo: "08~10시 디지털단지 피크",
+                hospitals: [
+                    { name: "A-고려대학교 구로병원", avail: 10, total: 38 },
+                    { name: "B-구로성심병원", avail: 8, total: 22 }
+                ]
+            },
+            { 
+                name: "동작구", zone: "서남권", residentPop: "380,200명", basePop: 280000, type: "mixed", peakInfo: "18~21시 노량진/노량대교 밀집",
+                hospitals: [
+                    { name: "A-서울특별시 보라매병원", avail: 16, total: 30 },
+                    { name: "B-중앙대학교병원", avail: 9, total: 20 }
+                ]
+            },
+            { 
+                name: "양천구", zone: "서남권", residentPop: "440,300명", basePop: 260000, type: "residential", peakInfo: "16~21시 학원가/주거지 피크",
+                hospitals: [
+                    { name: "A-이화여자대학교 목동병원", avail: 17, total: 35 },
+                    { name: "B-홍익병원", avail: 11, total: 20 }
+                ]
+            },
+            { 
+                name: "금천구", zone: "서남권", residentPop: "230,100명", basePop: 210000, type: "office", peakInfo: "08~10시 가산디지털 피크",
+                hospitals: [
+                    { name: "A-희명병원", avail: 15, total: 25 }
+                ]
+            },
+
+            // 동북권
+            { 
+                name: "노원구", zone: "동북권", residentPop: "503,100명", basePop: 320000, type: "residential", peakInfo: "18~21시 주거지 환류 피크",
+                hospitals: [
+                    { name: "A-노원을지대학교병원", avail: 10, total: 30 },
+                    { name: "B-인제대학교 상계백병원", avail: 12, total: 32 },
+                    { name: "C-원자력병원", avail: 8, total: 20 }
+                ]
+            },
+            { 
+                name: "성북구", zone: "동북권", residentPop: "430,200명", basePop: 290000, type: "mixed", peakInfo: "09~13시 대학가 밀집",
+                hospitals: [
+                    { name: "A-고려대학교 안암병원", avail: 11, total: 35 },
+                    { name: "B-성북우리아이들병원", avail: 8, total: 18 }
+                ]
+            },
+            { 
+                name: "동대문구", zone: "동북권", residentPop: "340,100명", basePop: 310000, type: "office", peakInfo: "09~12시 청량리/경희대 피크",
+                hospitals: [
+                    { name: "A-경희대학교병원", avail: 3, total: 30 },
+                    { name: "B-삼육서울병원", avail: 5, total: 28 },
+                    { name: "C-서울특별시 동부병원", avail: 6, total: 20 }
+                ]
+            },
+            { 
+                name: "중랑구", zone: "동북권", residentPop: "385,400명", basePop: 250000, type: "residential", peakInfo: "19~21시 저녁 퇴근 피크",
+                hospitals: [
+                    { name: "A-서울특별시 서울의료원", avail: 13, total: 35 },
+                    { name: "B-녹색병원", avail: 7, total: 20 },
+                    { name: "C-동부제일병원", avail: 8, total: 18 }
+                ]
+            },
+            { 
+                name: "광진구", zone: "동북권", residentPop: "338,200명", basePop: 320000, type: "mixed", peakInfo: "18~23시 건대입구 상권 피크",
+                hospitals: [
+                    { name: "A-건국대학교병원", avail: 16, total: 30 },
+                    { name: "B-혜민병원", avail: 11, total: 20 }
+                ]
+            },
+            { 
+                name: "성동구", zone: "동북권", residentPop: "280,300명", basePop: 310000, type: "mixed", peakInfo: "12~18시 성수 카페거리/IT 피크",
+                hospitals: [
+                    { name: "A-한양대학교병원", avail: 18, total: 35 },
+                    { name: "B-제인병원", avail: 12, total: 20 }
+                ]
+            },
+            { 
+                name: "강북구", zone: "동북권", residentPop: "295,300명", basePop: 210000, type: "residential", peakInfo: "18~20시 수유 상권/주거 피크",
+                hospitals: [
+                    { name: "A-국립재활원응급실", avail: 12, total: 20 },
+                    { name: "B-서울현대병원", avail: 9, total: 15 }
+                ]
+            },
+            { 
+                name: "도봉구", zone: "동북권", residentPop: "310,500명", basePop: 190000, type: "residential", peakInfo: "19~21시 도봉/창동 주거 피크",
+                hospitals: [
+                    { name: "A-한일병원", avail: 16, total: 30 },
+                    { name: "B-도봉병원", avail: 10, total: 15 }
+                ]
+            }
+        ];
+
+        // 24시간 예측 데이터 결합
+        seoulDistricts.forEach(d => {
+            d.curve = generate24HourCurve(d.type, d.basePop);
+            // 가용 병상 비율 계산 후 위험도 자동 부여 (6석 미만일 경우 high)
+            const availBeds = d.hospitals.reduce((sum, h) => sum + h.avail, 0);
+            if (availBeds <= 12) d.risk = "high";
+            else if (availBeds <= 22) d.risk = "medium";
+            else d.risk = "low";
+            
+            d.riskText = d.risk === "high" ? "위험" : d.risk === "medium" ? "주의" : "정상";
+        });
+
+        const ACCIDENT_RISK_THRESHOLD = 450000;
+        const ACCIDENT_WARN_THRESHOLD = 350000;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const currentHour = new Date().getHours();
+
+            // Real-time Clock
+            const updateClock = () => {
+                const now = new Date();
+                document.getElementById("clock").innerHTML = `<i class="fa-regular fa-clock"></i> ${now.toLocaleTimeString("ko-KR")}`;
+            };
+            updateClock();
+            setInterval(updateClock, 1000);
+
+            const grid = document.getElementById("district-grid");
+            const searchInput = document.getElementById("search-input");
+            const zoneFilter = document.getElementById("zone-filter");
+            const riskFilter = document.getElementById("risk-filter");
+            const sortFilter = document.getElementById("sort-filter");
+
+            const getErSummary = (hospitals) => {
+                const avail = hospitals.reduce((sum, h) => sum + h.avail, 0);
+                const total = hospitals.reduce((sum, h) => sum + h.total, 0);
+                return { avail, total };
+            };
+
+            // Summary metrics calculator
+            function updateSummaryData() {
+                const highErCount = seoulDistricts.filter(d => d.risk === "high").length;
+                
+                // 현재 시간 유동인구 기준 위험
+                const accidentRiskCount = seoulDistricts.filter(d => d.curve[currentHour] >= ACCIDENT_RISK_THRESHOLD).length;
+                
+                // 피크시간대 위험 예측 자치구 (24시간 중 한 번이라도 48만 이상 진입하는 곳)
+                const peakRiskCount = seoulDistricts.filter(d => Math.max(...d.curve) >= 480000).length;
+
+                const totalPop = seoulDistricts.reduce((sum, d) => sum + d.curve[currentHour], 0);
+                const totalBeds = seoulDistricts.reduce((sum, d) => {
+                    return sum + d.hospitals.reduce((hSum, h) => hSum + h.avail, 0);
+                }, 0);
+
+                document.getElementById("total-pop-count").textContent = `${(totalPop / 10000).toFixed(1)}만 명`;
+                document.getElementById("accident-risk-count").textContent = `${accidentRiskCount}곳`;
+                document.getElementById("peak-risk-count").textContent = `${peakRiskCount}곳`;
+                document.getElementById("high-er-count").textContent = `${highErCount}곳`;
+                document.getElementById("total-beds-count").textContent = `${totalBeds.toLocaleString()}석`;
+            }
+
+            function renderCards(data) {
+                grid.innerHTML = "";
+                
+                if (data.length === 0) {
+                    grid.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; padding: 4rem 1rem; color: var(--text-secondary);">
+                            <i class="fa-solid fa-triangle-exclamation" style="font-size: 2.2rem; margin-bottom: 0.8rem; color: var(--color-yellow);"></i>
+                            <p class="text-lg font-bold">검색 또는 필터 조건에 해당하는 자치구가 없습니다.</p>
+                            <p class="text-sm opacity-70 mt-1">입력하신 조건(유동인구/응급실/예측/지역)을 변경하여 재검색해 주세요.</p>
+                        </div>`;
+                    return;
+                }
+
+                data.forEach((item, index) => {
+                    const currentPop = item.curve[currentHour];
+                    const prevHour = (currentHour - 1 + 24) % 24;
+                    const prevPop = item.curve[prevHour];
+                    
+                    // 변화율 계산
+                    const deltaPercent = (((currentPop - prevPop) / prevPop) * 100).toFixed(1);
+                    const isUp = deltaPercent >= 0;
+
+                    const maxPopIn24H = Math.max(...item.curve);
+                    const peakHour = item.curve.indexOf(maxPopIn24H);
+
+                    const { avail, total } = getErSummary(item.hospitals);
+                    const ratio = Math.round((avail / total) * 100);
+                    
+                    let fillClass = "fill-low";
+                    if (ratio < 22) fillClass = "fill-high";
+                    else if (ratio < 45) fillClass = "fill-medium";
+
+                    // 사고 위험 판별
+                    const isAccidentDanger = currentPop >= ACCIDENT_RISK_THRESHOLD;
+                    const isAccidentWarning = currentPop >= ACCIDENT_WARN_THRESHOLD && !isAccidentDanger;
+                    const isPeakRisk = maxPopIn24H >= 480000;
+
+                    let popBannerClass = "";
+                    let popIcon = '<i class="fa-solid fa-person-walking" style="color:var(--color-purple)"></i>';
+                    let popStatusBadge = '<span class="text-xs text-emerald-400 font-semibold"><i class="fa-solid fa-check"></i> 인구 원활</span>';
+
+                    if (isAccidentDanger) {
+                        popBannerClass = "danger";
+                        popIcon = '<i class="fa-solid fa-users-rays" style="color:var(--color-red)"></i>';
+                        popStatusBadge = '<span class="text-xs text-red-400 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> 극심 혼잡</span>';
+                    } else if (isAccidentWarning) {
+                        popBannerClass = "warning";
+                        popIcon = '<i class="fa-solid fa-people-group" style="color:var(--color-yellow)"></i>';
+                        popStatusBadge = '<span class="text-xs text-amber-400 font-semibold"><i class="fa-solid fa-triangle-exclamation"></i> 인구 밀집</span>';
+                    }
+
+                    // 24시간 바 차트 HTML 생성
+                    const barsHTML = item.curve.map((pop, hr) => {
+                        const barHeightPercent = Math.max(12, Math.round((pop / maxPopIn24H) * 100));
+                        const isCurrentHr = hr === currentHour;
+                        const isPeakHr = hr === peakHour;
+
+                        let barColClass = "bar-col";
+                        if (isCurrentHr) barColClass += " now";
+                        else if (isPeakHr) barColClass += " peak";
+
+                        const tooltipText = `${hr.toString().padStart(2, '0')}시: ${pop.toLocaleString()}명 ${isCurrentHr ? '(현재)' : ''}`;
+
+                        return `
+                            <div class="${barColClass}" style="height: 100%;" data-tooltip="${tooltipText}">
+                                <div class="bar-fill" style="height: ${barHeightPercent}%;"></div>
+                            </div>
+                        `;
+                    }).join("");
+
+                    // 소속 병원 A-Z HTML
+                    const hospitalItemsHTML = item.hospitals.map(h => {
+                        const hRatio = (h.avail / h.total) * 100;
+                        let bedColorClass = "good-beds";
+                        if (hRatio < 20) bedColorClass = "low-beds";
+                        else if (hRatio < 45) bedColorClass = "mid-beds";
+
+                        return `
+                            <div class="hospital-item">
+                                <span class="hospital-name"><i class="fa-solid fa-square-h" style="color:var(--color-blue)"></i> ${h.name}</span>
+                                <span class="hospital-beds ${bedColorClass}">${h.avail}석 / ${h.total}석</span>
+                            </div>
+                        `;
+                    }).join("");
+
+                    const card = document.createElement("div");
+                    card.className = `district-card ${isAccidentDanger ? 'accident-danger-card' : ''}`;
+                    card.innerHTML = `
+                        <div>
+                            <!-- 경고 알림 바 -->
+                            ${isAccidentDanger ? `
+                                <div class="accident-alert-banner">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                    <span>🚨 현재 인구 과밀 - 실시간 사고 위험 주의지역</span>
+                                </div>
+                            ` : isPeakRisk ? `
+                                <div class="accident-alert-banner" style="background: linear-gradient(90deg, rgba(168, 85, 247, 0.25), rgba(59, 130, 246, 0.25)); border-color: rgba(168, 85, 247, 0.5); color: #e9d5ff;">
+                                    <i class="fa-solid fa-clock-rotate-left"></i>
+                                    <span>⚠️ 오늘 피크타임(${peakHour.toString().padStart(2, '0')}시) 밀집 사고 경보 지역</span>
+                                </div>
+                            ` : ''}
+
+                            <div class="card-header">
+                                <div class="district-title">
+                                    <span class="district-name">${item.name}</span>
+                                    <span class="zone-tag">${item.zone}</span>
+                                </div>
+                                <span class="risk-badge ${item.risk}">응급 ${item.riskText}</span>
+                            </div>
+
+                            <!-- 실시간 유동인구 지표 -->
+                            <div class="pop-banner ${popBannerClass}">
+                                <div class="pop-info">
+                                    <span class="pop-label">${popIcon} 실시간 유동인구 (${currentHour}시)</span>
+                                    <div class="pop-value-row">
+                                        <span class="pop-value">${currentPop.toLocaleString()} 명</span>
+                                        <span class="trend-delta ${isUp ? 'up' : 'down'}">
+                                            ${isUp ? '▲ +' : '▼ '}${deltaPercent}%
+                                        </span>
+                                    </div>
+                                </div>
+                                ${popStatusBadge}
+                            </div>
+
+                            <!-- 24시간 인구 밀집 예측 차트 토글 버튼 -->
+                            <button class="chart-toggle-btn" onclick="togglePredictionChart(${index})">
+                                <i class="fa-solid fa-chart-simple"></i> 
+                                🕒 24시간 인구 밀집 예측 그래프 보기
+                                <i class="fa-solid fa-chevron-down" id="chart-chevron-${index}" style="transition: transform 0.2s ease;"></i>
+                            </button>
+
+                            <!-- 24시간 예측 아코디언 박스 -->
+                            <div class="prediction-box" id="prediction-box-${index}">
+                                <div class="peak-tags-row">
+                                    <span class="text-xs text-slate-400">⚡ 피크 예측: <strong class="text-purple-300">${peakHour.toString().padStart(2, '0')}시 (${maxPopIn24H.toLocaleString()}명)</strong></span>
+                                    <span class="peak-tag"><i class="fa-solid fa-bolt"></i> ${item.peakInfo}</span>
+                                </div>
+                                <div class="bars-container">
+                                    ${barsHTML}
+                                </div>
+                                <div class="bars-labels">
+                                    <span>00시</span>
+                                    <span>06시</span>
+                                    <span class="text-amber-400 font-bold">12시</span>
+                                    <span>18시</span>
+                                    <span>24시</span>
+                                </div>
+                                <p class="text-xs text-slate-400 mt-2 text-center">
+                                    <span class="inline-block w-2 h-2 rounded-full bg-red-500 mr-1"></span>빨강: 현재시간 | 
+                                    <span class="inline-block w-2 h-2 rounded-full bg-purple-500 mx-1"></span>보라: 최고피크
+                                </p>
+                            </div>
+
+                            <div class="info-group">
+                                <span>상주 등록인구</span>
+                                <strong>${item.residentPop}</strong>
+                            </div>
+
+                            <!-- 가용 응급 병상 게이지 -->
+                            <div class="er-box">
+                                <div class="er-title-row">
+                                    <span>가용 응급 병상</span>
+                                    <strong>${avail}석 / ${total}석 (${ratio}%)</strong>
+                                </div>
+                                <div class="progress-track">
+                                    <div class="progress-fill ${fillClass}" style="width: ${ratio}%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <!-- A-Z Hospital Accordion Button -->
+                            <button class="hospital-toggle-btn" onclick="toggleHospitalList(${index})">
+                                <i class="fa-solid fa-list-check"></i> 
+                                소속 병원 A-Z 병상 상세 보기 (${item.hospitals.length}곳)
+                                <i class="fa-solid fa-chevron-down" id="chevron-${index}" style="transition: transform 0.2s ease;"></i>
+                            </button>
+
+                            <div class="hospital-list" id="hospital-list-${index}">
+                                ${hospitalItemsHTML}
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+
+            function filterAndSortData() {
+                const query = searchInput.value.trim().toLowerCase();
+                const selectedZone = zoneFilter.value;
+                const selectedRisk = riskFilter.value;
+                const selectedSort = sortFilter.value;
+
+                let filtered = seoulDistricts.filter(item => {
+                    const matchesDistrict = item.name.toLowerCase().includes(query);
+                    const matchesHospital = item.hospitals.some(h => h.name.toLowerCase().includes(query));
+                    const matchesSearch = matchesDistrict || matchesHospital;
+
+                    const matchesZone = selectedZone === "all" || item.zone === selectedZone;
+
+                    let matchesRisk = true;
+                    if (selectedRisk === "accident") {
+                        matchesRisk = item.curve[currentHour] >= ACCIDENT_RISK_THRESHOLD;
+                    } else if (selectedRisk === "peak-danger") {
+                        matchesRisk = Math.max(...item.curve) >= 480000;
+                    } else if (selectedRisk !== "all") {
+                        matchesRisk = item.risk === selectedRisk;
+                    }
+
+                    return matchesSearch && matchesZone && matchesRisk;
+                });
+
+                // Sorting
+                if (selectedSort === "pop-desc") {
+                    filtered.sort((a, b) => b.curve[currentHour] - a.curve[currentHour]);
+                } else if (selectedSort === "pop-asc") {
+                    filtered.sort((a, b) => a.curve[currentHour] - b.curve[currentHour]);
+                } else if (selectedSort === "delta-desc") {
+                    filtered.sort((a, b) => {
+                        const prevHr = (currentHour - 1 + 24) % 24;
+                        const aDelta = (a.curve[currentHour] - a.curve[prevHr]) / a.curve[prevHr];
+                        const bDelta = (b.curve[currentHour] - b.curve[prevHr]) / b.curve[prevHr];
+                        return bDelta - aDelta;
+                    });
+                } else if (selectedSort === "beds-asc") {
+                    filtered.sort((a, b) => {
+                        const aAvail = a.hospitals.reduce((sum, h) => sum + h.avail, 0);
+                        const bAvail = b.hospitals.reduce((sum, h) => sum + h.avail, 0);
+                        return aAvail - bAvail;
+                    });
+                }
+
+                renderCards(filtered);
+
+                // 검색어 입력 시 자동 펼침
+                if (query.length > 0) {
+                    filtered.forEach((_, idx) => {
+                        const pBox = document.getElementById(`prediction-box-${idx}`);
+                        const hList = document.getElementById(`hospital-list-${idx}`);
+                        if (pBox) pBox.classList.add('open');
+                        if (hList) hList.classList.add('open');
+                    });
+                }
+            }
+
+            // 차트 토글
+            window.togglePredictionChart = function(index) {
+                const box = document.getElementById(`prediction-box-${index}`);
+                const chevron = document.getElementById(`chart-chevron-${index}`);
+                if (box) {
+                    box.classList.toggle('open');
+                    if (chevron) {
+                        chevron.style.transform = box.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0deg)';
+                    }
+                }
+            };
+
+            // 병원 토글
+            window.toggleHospitalList = function(index) {
+                const list = document.getElementById(`hospital-list-${index}`);
+                const chevron = document.getElementById(`chevron-${index}`);
+                if (list) {
+                    list.classList.toggle('open');
+                    if (chevron) {
+                        chevron.style.transform = list.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0deg)';
+                    }
+                }
+            };
+
+            // Event Binding
+            searchInput.addEventListener("input", filterAndSortData);
+            zoneFilter.addEventListener("change", filterAndSortData);
+            riskFilter.addEventListener("change", filterAndSortData);
+            sortFilter.addEventListener("change", filterAndSortData);
+
+            // Initialize
+            updateSummaryData();
+            renderCards(seoulDistricts);
+        });
+    </script>
+</body>
+</html>
